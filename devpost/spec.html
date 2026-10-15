@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Policy Crash Test Spec</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,700..900&family=Inter:wght@400;600;700&family=Lora:ital@1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #F7F5F0; --ink: #111111; --muted: #5B5F66; --line: #D8D3C8;
+    --hazard: #FFD400; --diary: #FBF3E4; --card: #FFFFFF;
+    --green: #1F8A4C; --grey: #8A8F98; --amber: #D98A00; --red: #C8322B;
+    --stripes: repeating-linear-gradient(-45deg, var(--hazard) 0 10px, var(--ink) 10px 20px);
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --head: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    --serif: "Lora", Georgia, "Times New Roman", serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.55 var(--sans); }
+  .stripe { height: 10px; background: var(--stripes); }
+  header, main, footer { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+  header { padding-top: 36px; padding-bottom: 8px; }
+  .eyebrow { font: 700 12px/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  h1, h2, h3 { font-family: var(--head); font-weight: 900; font-stretch: 75%; letter-spacing: .01em; line-height: 1.02; margin: 0; }
+  h1 { font-size: clamp(40px, 7vw, 76px); text-transform: uppercase; margin-top: 10px; }
+  h2 { font-size: clamp(26px, 4vw, 36px); text-transform: uppercase; margin: 0 0 14px; }
+  h3 { font-size: 21px; text-transform: uppercase; margin: 0 0 6px; }
+  .lede { max-width: 760px; font-size: 18px; margin: 14px 0 0; }
+  .status { display: inline-block; margin-left: 10px; padding: 3px 9px; border: 1.5px solid var(--ink); font: 700 12px/1.2 var(--sans); letter-spacing: .08em; text-transform: uppercase; vertical-align: middle; background: var(--card); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; padding: 0; list-style: none; }
+  .chips li { border: 1.5px solid var(--ink); background: var(--card); padding: 4px 10px; font: 600 13px/1.3 var(--sans); }
+  .chips li.ai { background: var(--hazard); }
+  section { padding: 44px 0 6px; }
+  section + section { border-top: 2px solid var(--ink); margin-top: 34px; }
+  p { margin: 0 0 12px; }
+  code, .mono { font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .pieces { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; margin-top: 18px; }
+  .piece { background: var(--card); border: 1.5px solid var(--ink); padding: 14px 16px; }
+  .piece.ai { background: #FFF7CC; }
+  .piece.code { background: var(--ink); color: #fff; }
+  .piece.code code { color: #fff; }
+  .piece h3 { font-size: 18px; }
+  .piece p { margin: 0; font-size: 15px; }
+  .why { margin-top: 18px; padding: 14px 18px; background: var(--diary); border-left: 6px solid var(--ink); font: italic 17px/1.55 var(--serif); max-width: 860px; }
+
+  /* Diagram */
+  .flow { background: var(--card); border: 1.5px solid var(--ink); padding: 10px; margin-top: 8px; }
+  .flow svg { display: block; width: 100%; height: auto; }
+  .node rect { stroke: var(--ink); stroke-width: 1.6; }
+  .node text { font-family: var(--sans); fill: var(--ink); }
+  .node .t { font-size: 15px; font-weight: 700; }
+  .node .s { font-size: 12px; fill: #34373c; }
+  .node.input rect { fill: #fff; rx: 14; }
+  .node.data rect { fill: #fff; stroke-dasharray: 5 4; }
+  .node.route rect { fill: #fff; }
+  .node.ai rect { fill: var(--hazard); }
+  .node.code rect { fill: var(--ink); }
+  .node.code text { fill: #fff; }
+  .node.code .s { fill: #d9d9d9; }
+  .node.screen rect { fill: #fff; stroke-width: 3.2; }
+  .edge { fill: none; stroke: var(--ink); stroke-width: 1.7; }
+  .edge.dashed { stroke-dasharray: 5 5; }
+  .node, .edge, .edge-label { transition: opacity .25s ease; }
+  .dim { opacity: .14; }
+  .node.on rect { filter: drop-shadow(3px 3px 0 rgba(17,17,17,.9)); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px 22px; margin: 12px 2px 0; padding: 0; list-style: none; font-size: 13px; color: var(--muted); }
+  .legend span { display: inline-block; width: 22px; height: 14px; border: 1.6px solid var(--ink); vertical-align: -2px; margin-right: 7px; background: #fff; }
+  .legend .l-ai { background: var(--hazard); }
+  .legend .l-code { background: var(--ink); }
+  .legend .l-data { border-style: dashed; }
+  .legend .l-screen { border-width: 3px; }
+
+  /* Stepper */
+  .stepper { margin-top: 20px; display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 18px; }
+  .steplist { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+  .steplist button { width: 100%; text-align: left; border: 1.5px solid var(--ink); background: var(--card); padding: 8px 12px; font: 600 14px/1.3 var(--sans); color: var(--ink); cursor: pointer; }
+  .steplist button .n { display: inline-block; min-width: 22px; font-family: var(--head); font-weight: 900; font-stretch: 75%; font-size: 17px; }
+  .steplist button[aria-pressed="true"] { background: var(--hazard); box-shadow: 3px 3px 0 var(--ink); }
+  .steplist button:focus-visible, .navbtn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .panel { background: var(--card); border: 1.5px solid var(--ink); padding: 18px 20px; min-height: 250px; }
+  .panel h3 { font-size: 24px; }
+  .panel .meta { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; margin-top: 12px; font-size: 14px; }
+  .panel .meta dt { font-weight: 700; text-transform: uppercase; letter-spacing: .08em; font-size: 11.5px; color: var(--muted); padding-top: 3px; }
+  .panel .meta dd { margin: 0; }
+  .panel .meta code { background: #F1EEE6; padding: 1px 5px; display: inline-block; margin: 0 4px 4px 0; }
+  .fails { margin-top: 14px; padding: 10px 12px; border-left: 6px solid var(--red); background: #FBEFEE; font-size: 14px; }
+  .nav { display: flex; gap: 8px; margin-top: 14px; }
+  .navbtn { border: 1.5px solid var(--ink); background: var(--card); padding: 6px 14px; font: 700 13px/1.2 var(--sans); cursor: pointer; }
+  .js .static-steps { display: none; }
+  .static-steps li { margin-bottom: 8px; }
+
+  /* Components */
+  details { background: var(--card); border: 1.5px solid var(--ink); margin: 0 0 10px; }
+  summary { cursor: pointer; padding: 12px 16px; font: 700 16px/1.3 var(--sans); list-style: none; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; font: 900 22px/1 var(--head); margin-left: auto; }
+  details[open] summary::after { content: "–"; }
+  summary code { color: var(--muted); font-weight: 400; }
+  details > div { padding: 0 16px 14px; border-top: 1px solid var(--line); padding-top: 12px; font-size: 15px; }
+  details ul { margin: 0; padding-left: 20px; }
+  .prd { display: inline-block; margin-top: 8px; font-size: 13px; color: var(--muted); }
+  .prd b { color: var(--ink); }
+  .tag-ai { background: var(--hazard); border: 1.2px solid var(--ink); padding: 0 6px; font-size: 11.5px; font-weight: 700; }
+  .tag-code { background: var(--ink); color: #fff; padding: 0 6px; font-size: 11.5px; font-weight: 700; }
+
+  /* Tables, commands */
+  .tablewrap { overflow-x: auto; border: 1.5px solid var(--ink); background: var(--card); }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font: 700 11.5px/1.3 var(--sans); letter-spacing: .1em; text-transform: uppercase; background: #F1EEE6; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-family: var(--head); font-weight: 900; font-stretch: 75%; font-size: 18px; }
+  .sign { background: var(--hazard); padding: 0 5px; font-weight: 700; }
+  .cmds { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+  .cmd { background: var(--ink); color: #fff; padding: 14px 16px; }
+  .cmd .eyebrow { color: var(--hazard); }
+  .cmd pre { margin: 8px 0 0; white-space: pre-wrap; font: 13.5px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .layers { counter-reset: layer; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 14px 0 18px; padding: 0; list-style: none; }
+  .layers li { counter-increment: layer; background: var(--card); border: 1.5px solid var(--ink); padding: 12px 14px 12px 50px; position: relative; font-size: 15px; }
+  .layers li::before { content: counter(layer); position: absolute; left: 12px; top: 8px; font: 900 30px/1 var(--head); font-stretch: 75%; }
+  .layers b { display: block; }
+  ol.calls { columns: 2 340px; column-gap: 28px; padding-left: 22px; font-size: 14.5px; }
+  ol.calls li { break-inside: avoid; margin-bottom: 8px; }
+  footer { padding-top: 30px; padding-bottom: 40px; color: var(--muted); font-size: 13px; }
+
+  @media (max-width: 760px) {
+    .stepper { grid-template-columns: 1fr; }
+    .steplist { flex-direction: row; flex-wrap: wrap; }
+    .steplist li { flex: 1 1 140px; }
+    .panel .meta { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { .node, .edge, .edge-label { transition: none; } }
+</style>
+</head>
+<body>
+<div class="stripe" aria-hidden="true"></div>
+<header>
+  <div class="eyebrow">Technical spec · companion to <code>devpost/spec.md</code> (canonical)</div>
+  <h1>Policy Crash Test <span class="status">Approved</span></h1>
+  <p class="lede">One web page, two small server routes, and one calculator that runs in the browser. The AI reads the policy and writes the diaries; every number on screen comes from tested code.</p>
+  <ul class="chips" aria-label="Stack">
+    <li>Next.js 16.4 · App Router</li><li>React 19.3</li><li>TypeScript</li><li>Tailwind CSS 4.3</li>
+    <li>@anthropic-ai/sdk 0.134</li><li>zod 4.6</li><li>Vitest 5.0</li>
+    <li class="ai">PARSE_MODEL · claude-haiku-5-5</li><li class="ai">DIARY_MODEL · claude-sonnet-5-5</li>
+  </ul>
+</header>
+
+<main>
+  <section id="plain" aria-labelledby="plain-h">
+    <h2 id="plain-h">How it works, in plain language</h2>
+    <div class="pieces">
+      <div class="piece"><h3>The town</h3><p>8 fixed residents in <code>data/residents.ts</code>: income, spending in 9 categories, age, housing type, tags.</p></div>
+      <div class="piece"><h3>Levers</h3><p>A policy written as numbers: what changes, by how much, for whom. Everything after the input step works from levers.</p></div>
+      <div class="piece"><h3>Presets</h3><p>4 lever files written and checked by hand. A chip loads one; no AI involved.</p></div>
+      <div class="piece ai"><h3>The parser</h3><p>Sends a typed policy to Claude Haiku 5.5 with your prompt; the reply is forced into the lever shape, then checked again.</p></div>
+      <div class="piece code"><h3>The engine</h3><p>Plain TypeScript: levers in, numbers and verdicts out. Same input, same output. Runs in the browser and on the server.</p></div>
+      <div class="piece ai"><h3>The diary writer</h3><p>Re-runs the engine, sends Claude Sonnet 5.5 each resident's exact card numbers, streams back one diary per line.</p></div>
+      <div class="piece"><h3>The page</h3><p>Holds the current run in memory. Nothing is saved; refresh and the town is back to normal.</p></div>
+    </div>
+    <p class="why">Why this shape: the AI does only what it's good at, reading messy text and writing in a human voice, while every number comes from tested code. Two routes because there are two prompts; no database because nothing persists.</p>
+  </section>
+
+  <section id="flow-section" aria-labelledby="flow-h">
+    <h2 id="flow-h">How data moves</h2>
+    <p>Pick a step to see which pieces it touches. Each step names its files and the PRD heading it implements.</p>
+    <div class="flow">
+      <svg viewBox="0 0 1060 486" role="img" aria-labelledby="dg-title dg-desc">
+        <title id="dg-title">Policy Crash Test data flow</title>
+        <desc id="dg-desc">A preset chip loads hand-checked levers from data/presets; a typed policy goes to POST /api/parse, which calls Claude Haiku 5.5 with prompts/parse-policy.md. Both produce levers. The engine combines levers with the residents and updates the screen. Levers also go to POST /api/diaries, which re-runs the engine and calls Claude Sonnet 5.5 with prompts/write-diaries.md; it streams one JSON object per line, and each diary lands on its card.</desc>
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#111111"/>
+          </marker>
+        </defs>
+
+        <path id="e-chip-preset" class="edge" d="M200,109 L228,109" marker-end="url(#arrow)"/>
+        <path id="e-typed-parse" class="edge" d="M200,229 L228,229" marker-end="url(#arrow)"/>
+        <path id="e-preset-levers" class="edge" d="M445,109 C464,109 458,178 476,178" marker-end="url(#arrow)"/>
+        <path id="e-parse-levers" class="edge" d="M445,230 C464,230 458,206 476,206" marker-end="url(#arrow)"/>
+        <path id="e-res-engine" class="edge" d="M618,49 C638,49 632,96 650,96" marker-end="url(#arrow)"/>
+        <path id="e-levers-engine" class="edge" d="M618,176 C638,176 632,124 650,124" marker-end="url(#arrow)"/>
+        <path id="e-engine-screen" class="edge" d="M857,109 L883,109" marker-end="url(#arrow)"/>
+        <path id="e-levers-droute" class="edge" d="M618,212 C642,212 628,301 650,301" marker-end="url(#arrow)"/>
+        <path id="e-droute-writer" class="edge" d="M754,340 L754,390" marker-end="url(#arrow)"/>
+        <path id="e-writer-lines" class="edge" d="M857,431 L883,431" marker-end="url(#arrow)"/>
+        <path id="e-lines-dcards" class="edge" d="M965,392 L965,342" marker-end="url(#arrow)"/>
+        <path id="e-dcards-screen" class="edge dashed" d="M965,262 L965,160" marker-end="url(#arrow)"/>
+        <text id="l-dcards-screen" class="edge-label" x="973" y="216" font-size="11" fill="#5B5F66" font-family="Inter, system-ui, sans-serif">same cards</text>
+
+        <g id="n-residents" class="node data"><rect x="478" y="20" width="140" height="58"/>
+          <text class="t" x="490" y="43">Residents</text><text class="s" x="490" y="63">data/residents.ts</text></g>
+        <g id="n-chip" class="node input"><rect x="20" y="80" width="180" height="58" rx="14"/>
+          <text class="t" x="34" y="103">Preset chip</text><text class="s" x="34" y="123">tap → runs at once</text></g>
+        <g id="n-preset" class="node data"><rect x="230" y="80" width="215" height="58"/>
+          <text class="t" x="242" y="103">Hand-checked levers</text><text class="s" x="242" y="123">data/presets/*.json</text></g>
+        <g id="n-typed" class="node input"><rect x="20" y="200" width="180" height="58" rx="14"/>
+          <text class="t" x="34" y="223">Typed policy</text><text class="s" x="34" y="243">1–500 characters</text></g>
+        <g id="n-parse" class="node ai"><rect x="230" y="190" width="215" height="80"/>
+          <text class="t" x="242" y="213">POST /api/parse</text><text class="s" x="242" y="233">Claude Haiku 5.5</text><text class="s" x="242" y="251">prompts/parse-policy.md</text></g>
+        <g id="n-levers" class="node route"><rect x="478" y="150" width="140" height="80"/>
+          <text class="t" x="490" y="173">Levers</text><text class="s" x="490" y="193">what changes,</text><text class="s" x="490" y="211">how much, for whom</text></g>
+        <g id="n-engine" class="node code"><rect x="652" y="70" width="205" height="78"/>
+          <text class="t" x="664" y="93">Engine</text><text class="s" x="664" y="113">lib/engine.ts · tested</text><text class="s" x="664" y="131">runs in browser + server</text></g>
+        <g id="n-screen" class="node screen"><rect x="885" y="60" width="160" height="98"/>
+          <text class="t" x="897" y="83">Screen</text><text class="s" x="897" y="103">summary · chart</text><text class="s" x="897" y="121">cards · policy panel</text><text class="s" x="897" y="139">updates in place</text></g>
+        <g id="n-droute" class="node route"><rect x="652" y="262" width="205" height="78"/>
+          <text class="t" x="664" y="285">POST /api/diaries</text><text class="s" x="664" y="305">engine again →</text><text class="s" x="664" y="323">exact card strings</text></g>
+        <g id="n-dcards" class="node screen"><rect x="885" y="262" width="160" height="78"/>
+          <text class="t" x="897" y="285">Diaries land</text><text class="s" x="897" y="305">on their own cards</text><text class="s" x="897" y="323">as they arrive</text></g>
+        <g id="n-writer" class="node ai"><rect x="652" y="392" width="205" height="78"/>
+          <text class="t" x="664" y="415">Claude Sonnet 5.5</text><text class="s" x="664" y="435">prompts/write-diaries.md</text><text class="s" x="664" y="453">effort: low · streamed</text></g>
+        <g id="n-lines" class="node data"><rect x="885" y="392" width="160" height="78"/>
+          <text class="t" x="897" y="415">JSON lines</text><text class="s" x="897" y="435">one per resident</text><text class="s" x="897" y="453">checked, then sent</text></g>
+      </svg>
+    </div>
+    <ul class="legend" aria-label="Legend">
+      <li><span class="l-ai"></span>AI call (yellow)</li>
+      <li><span class="l-code"></span>Tested code</li>
+      <li><span class="l-data"></span>Data or file</li>
+      <li><span></span>Route or input</li>
+      <li><span class="l-screen"></span>What you see</li>
+    </ul>
+
+    <div class="stepper" id="stepper" hidden>
+      <ol class="steplist" id="steplist"></ol>
+      <div class="panel" id="panel" aria-live="polite"></div>
+    </div>
+
+    <ol class="static-steps">
+      <li><b>Meet the town.</b> The 8 residents load from <code>data/residents.ts</code>; cards show income, spare money and the everyday line.</li>
+      <li><b>Pick a policy.</b> A chip loads hand-checked levers; a typed policy goes to the parser.</li>
+      <li><b>Reading the policy (typed only).</b> <code>POST /api/parse</code> → Claude Haiku 5.5 → levers, checked with zod.</li>
+      <li><b>Running the numbers.</b> The engine updates the summary, chart, cards and panel in place, with no network call.</li>
+      <li><b>Writing diaries.</b> <code>POST /api/diaries</code> re-runs the engine and streams one diary per line from Claude Sonnet 5.5.</li>
+      <li><b>Done, or partly done.</b> After the stream ends or 20 seconds, missing diaries say "Diary didn't come through"; "Retry diaries" asks for only those.</li>
+      <li><b>Next policy.</b> A new run cancels the old diary request; cards change colour in place.</li>
+    </ol>
+  </section>
+
+  <section id="components" aria-labelledby="comp-h">
+    <h2 id="comp-h">The pieces</h2>
+    <p>Each piece has its own heading in <code>spec.md</code>, so <code>5-build</code> can point at it.</p>
+
+    <details><summary>Town Data <code>data/residents.ts</code></summary><div>
+      <ul><li>8 residents: id, name, age, role, everyday line, household size, housing type, tags, icon, income, budget in 9 categories.</li>
+      <li>Housing types (your mapping): Mdm Lim <code>hdb_3_room</code>, Faizal <code>hdb_4_room</code>, Chloe <code>with_parents</code>, the Gohs <code>renting</code>, Uncle Raju <code>hdb_2_room</code>, Nurul <code>hdb_3_room</code>, Marcus <code>condo</code>, Tan Wei Jie <code>renting</code>.</li>
+      <li>Everyday lines are drafted in the build for your approval.</li></ul>
+      <span class="prd">Implements <b>prd.md › Resident Cards</b></span></div></details>
+
+    <details><summary>Lever Schema <code>lib/schemas.ts</code></summary><div>
+      <ul><li>zod schemas for Lever, Eligibility, ParseResult, PresetFile and DiaryLine; TypeScript types come from them.</li>
+      <li>One schema checks preset files, parser replies and diary lines, and becomes the parser's structured-output format.</li></ul>
+      <span class="prd">Implements <b>prd.md › How the Policy Was Read</b></span></div></details>
+
+    <details><summary>Presets <code>data/presets/*.json</code></summary><div>
+      <ul><li><code>fares-20.json</code>: public_transport +20%, everyone.</li>
+      <li><code>one-off-300.json</code>: one-off 300, minAge 21, maxMonthlyIncome 3000 ("under $3,000" read as "$3,000 or less").</li>
+      <li><code>petrol-15.json</code>: private_transport +15% (all car costs treated as rising; stated as an assumption).</li>
+      <li><code>childcare-half.json</code>: childcare −50%, parents only (all parents in town work; school fees excluded).</li></ul>
+      <span class="prd">Implements <b>prd.md › Policy Input and Presets</b>, <b>Expected Preset Results</b></span></div></details>
+
+    <details><summary>Policy Engine <span class="tag-code">TESTED CODE</span> <code>lib/engine.ts</code></summary><div>
+      <ul><li>Eligibility: every rule given must pass; bounds inclusive.</li>
+      <li>Levers: percent change on the pre-policy amount, fixed monthly change, one-off kept separate; <code>all_taxable_spending</code> expands to five categories; cents after each lever.</li>
+      <li>Verdict: both lenses, worse wins; spare-money lens on losses only; a line counts only once crossed; Unaffected means exactly $0.</li></ul>
+      <span class="prd">Implements <b>prd.md › Verdicts</b>, <b>Resident Cards</b></span></div></details>
+
+    <details><summary>Display Formatting <span class="tag-code">TESTED CODE</span> <code>lib/format.ts</code></summary><div>
+      <ul><li>Whole dollars; percentages to one decimal, rounded toward zero, no trailing ".0".</li>
+      <li>Card lines for loss, gain, gain bigger than spare money, below zero, one-off; the summary line; chart values.</li></ul>
+      <span class="prd">Implements <b>prd.md › Resident Cards</b>, <b>Town Summary</b></span></div></details>
+
+    <details><summary>Parse Route <span class="tag-ai">AI</span> <code>app/api/parse/route.ts</code></summary><div>
+      <ul><li><code>POST { text }</code>, 1–500 characters. Claude Haiku 5.5 via <code>client.messages.parse()</code>, structured output from the zod schema, effort <code>low</code>, no temperature, 12 s timeout, 1 retry.</li>
+      <li>Refusal, empty or invalid reply, or API error → <code>{ ok: false }</code> → "Couldn't read that one right now. Try again, or tap a preset."</li>
+      <li>Not a policy → the AI's reason, shown under the box.</li></ul>
+      <span class="prd">Implements <b>prd.md › How the Policy Was Read</b>, <b>States and Boundaries</b></span></div></details>
+
+    <details><summary>Diary Route <span class="tag-ai">AI</span> <code>app/api/diaries/route.ts</code></summary><div>
+      <ul><li><code>POST { policyText, levers, residentIds }</code>; re-runs the engine; sends exact card strings and the summary line.</li>
+      <li>Claude Sonnet 5.5 via <code>client.messages.stream()</code>, effort <code>low</code>, no temperature; the browser's abort cancels the model call.</li>
+      <li>Each finished line is checked (known id, one of five moods) and forwarded as NDJSON; bad lines are dropped.</li></ul>
+      <span class="prd">Implements <b>prd.md › Diaries</b>, <b>States and Boundaries</b></span></div></details>
+
+    <details><summary>Prompt and Client Setup <code>lib/prompts.ts · lib/anthropic.ts</code></summary><div>
+      <ul><li>Reads your two prompts from <code>prompts/</code> once and caches them (server only).</li>
+      <li>One SDK client; <code>PARSE_MODEL</code> and <code>DIARY_MODEL</code> from env, with the defaults above.</li></ul></div></details>
+
+    <details><summary>Crash Test Controller <code>lib/useCrashTest.ts</code></summary><div>
+      <ul><li>Run id, source, phase, message, levers, results, diary states.</li>
+      <li>A new run aborts the old diary request; stale lines are ignored. Run and chips are disabled only while reading.</li>
+      <li>20-second diary timer; "Retry diaries" asks only for the failed residents. A preset counts only if it came from the chip unedited.</li></ul>
+      <span class="prd">Implements <b>prd.md › The Core Journey</b>, <b>States and Boundaries</b></span></div></details>
+
+    <details><summary>Page and UI Components <code>app/page.tsx · components/</code></summary><div>
+      <ul><li><code>PolicyInput</code>, <code>StatusLine</code> (screen-reader announced), <code>ChangeChart</code> (hand-built bars), <code>PolicyPanel</code>, <code>ResidentCard</code>, <code>SpareMoneyBar</code> (10% tick, hazard spill), <code>DiaryNote</code>, <code>Disclaimer</code>.</li>
+      <li>Four cards across on wide screens, two on tablets, one on phones.</li></ul>
+      <span class="prd">Implements every <b>prd.md › Features and Behavior</b> screen element</span></div></details>
+
+    <details><summary>Tests <span class="tag-code">OFFLINE</span> <code>tests/</code></summary><div>
+      <ul><li><code>engine.test.ts</code>: eligibility, lever kinds, the exact −1/−5/−10/−30% lines, Unaffected vs. Barely affected, one-offs.</li>
+      <li><code>presets.test.ts</code>: every row of the PRD's Expected Preset Results.</li>
+      <li><code>format.test.ts</code>: rounding toward zero, never over 100%.</li>
+      <li><code>prompts.test.ts</code>: the parser prompt's examples are valid JSON and pass the schema.</li></ul></div></details>
+
+    <details><summary>Live Evals <span class="tag-ai">AI</span> <code>evals/</code></summary><div>
+      <ul><li>Parser: 10 fixture policies × 3 runs on <code>PARSE_MODEL</code> (table below).</li>
+      <li>Diaries: 4 presets × 2 runs on <code>DIARY_MODEL</code>: mood fits verdict, amounts match the card, reaction ≤ 12 words, 2–4 sentences, no politics.</li></ul>
+      <span class="prd">Implements <b>prd.md › Diaries</b>, <b>How the Policy Was Read</b></span></div></details>
+  </section>
+
+  <section id="tests" aria-labelledby="tests-h">
+    <h2 id="tests-h">Testing the AI, not just the engine</h2>
+    <p>Your learning goal, as three layers, from cheapest and most certain to most realistic:</p>
+    <ol class="layers">
+      <li><b>Shape is guaranteed.</b>Structured output forces the lever shape; zod checks every reply at runtime.</li>
+      <li><b>The prompt is tested offline.</b>Its examples must be valid JSON that passes the schema. This is what caught example 4.</li>
+      <li><b>Behaviour is measured live.</b>Fixture policies, each run 3 times, because "always" needs more than one run.</li>
+    </ol>
+    <div class="tablewrap"><table>
+      <thead><tr><th>#</th><th>Typed policy</th><th>Must come back as</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>Bus and train fares rise 10%</td><td>public_transport, +10</td></tr>
+        <tr><td class="num">2</td><td>Electricity bills cut 20%</td><td><span class="sign">utilities, −20</span> (your sign check)</td></tr>
+        <tr><td class="num">3</td><td>Childcare fees cut by half for working parents</td><td>childcare, −50, parents only</td></tr>
+        <tr><td class="num">4</td><td>School fees go up 5%</td><td>education, +5</td></tr>
+        <tr><td class="num">5</td><td>$300 one-off payout for adults earning under $3,000 a month</td><td>one-off 300, maxMonthlyIncome 3000</td></tr>
+        <tr><td class="num">6</td><td>HDB households get $50 off utilities every month</td><td>fixed monthly utilities −50, the three HDB types</td></tr>
+        <tr><td class="num">7</td><td>GST rises by 1 percentage point</td><td>all_taxable_spending, positive</td></tr>
+        <tr><td class="num">8</td><td>Raise the retirement age to 70</td><td>a policy, no levers, an assumption saying why</td></tr>
+        <tr><td class="num">9</td><td>What should I eat for lunch?</td><td>not a policy</td></tr>
+        <tr><td class="num">10</td><td>Make transport cheaper for old folks</td><td>public_transport negative, an age or senior rule, confidence not high</td></tr>
+      </tbody>
+    </table></div>
+    <p style="margin-top:12px">Estimated cost: parser set about $0.01, diary set about $0.16. A normal crash test costs about 2 cents. <code>5-build</code> measures one real run before running anything in bulk.</p>
+  </section>
+
+  <section id="run" aria-labelledby="run-h">
+    <h2 id="run-h">Where it runs</h2>
+    <div class="cmds">
+      <div class="cmd"><div class="eyebrow">Set up</div><pre>npm install
+cp .env.example .env.local
+# add ANTHROPIC_API_KEY</pre></div>
+      <div class="cmd"><div class="eyebrow">Develop</div><pre>npm run dev
+# open http://localhost:3000
+npm test</pre></div>
+      <div class="cmd"><div class="eyebrow">Evals (uses your key)</div><pre>npm run eval:parser
+npm run eval:diaries</pre></div>
+      <div class="cmd"><div class="eyebrow">Record the demo</div><pre>npm run build && npm start
+# fresh window, desktop width</pre></div>
+    </div>
+    <p style="margin-top:12px">Locally on your laptop. Deployment is optional and not chosen; a public deploy would need a rate limit on the two routes first (<code>6-ship</code>).</p>
+  </section>
+
+  <section id="calls" aria-labelledby="calls-h">
+    <h2 id="calls-h">Small technical calls (veto any)</h2>
+    <ol class="calls">
+      <li>One engine file runs in the browser (instant cards) and on the server (diary input); the server recomputes, never trusts browser numbers.</li>
+      <li>Money is computed to the cent after each lever, shown in whole dollars.</li>
+      <li>Each percent change applies to the pre-policy amount, so lever order never matters.</li>
+      <li>Eligibility bounds are inclusive; "under $3,000" in the preset means "$3,000 or less".</li>
+      <li>Both models at effort <code>low</code>, no temperature. Parse: <code>max_tokens</code> 4,000, 12 s timeout, 1 retry. Diaries: 16,000.</li>
+      <li>Refusals are handled before content is read.</li>
+      <li>Diary lines are checked for shape at runtime; content is checked by the eval.</li>
+      <li>The diary input carries the exact card strings plus the summary line.</li>
+      <li>A preset counts only if it came from the chip unedited.</li>
+      <li>No artificial delays; "Running the numbers" may flash by.</li>
+      <li>The diary call opts into server-side refusal fallback (<code>fallbacks: "default"</code>, beta). It rarely matters here; veto to keep the call plain.</li>
+      <li>No prompt caching: runs cost cents.</li>
+      <li>Verdict colours: green #1F8A4C, grey #8A8F98, amber #D98A00, red #C8322B; dark badge text on amber and grey; 300 ms colour change, off for reduced motion.</li>
+      <li>Household sizes: Lim 2, Faizal 4, Chloe 3 (assumed), Gohs 2, Raju 1, Nurul 2, Marcus 4, Tan 1. Diary context only.</li>
+      <li>Resident ids: lim, faizal, chloe, goh, raju, nurul, marcus, tan.</li>
+      <li>Parser cases run 3 times and must pass every time; diaries run 2 times per preset.</li>
+      <li>The demo is recorded in production mode.</li>
+    </ol>
+  </section>
+</main>
+<footer>Canonical version: <code>devpost/spec.md</code>. This page is a visual companion and is regenerated when the spec changes.</footer>
+
+<script>
+(function () {
+  document.documentElement.classList.add("js");
+  var steps = [
+    { title: "Whole flow", nodes: "all", edges: "all",
+      text: "Everything at once. Yellow boxes are the only places the AI is involved; the black box is the tested engine every number comes from.",
+      files: [], prd: ["The Core Journey"], fails: "" },
+    { title: "Meet the town", nodes: ["n-residents", "n-screen"], edges: [],
+      text: "The page loads the 8 residents. Each card shows income, spare money (income minus spending) and the everyday line. Nothing has run yet.",
+      files: ["data/residents.ts", "app/page.tsx", "components/ResidentCard.tsx"], prd: ["The Core Journey", "Resident Cards"], fails: "Nothing to fail: static data." },
+    { title: "Pick a policy", nodes: ["n-chip", "n-preset", "n-typed"], edges: ["e-chip-preset"],
+      text: "A chip fills the box and runs at once with its hand-checked levers. A typed policy goes to the parser. A preset whose text was edited counts as typed.",
+      files: ["components/PolicyInput.tsx", "data/presets/*.json", "lib/presets.ts"], prd: ["Policy Input and Presets"], fails: "Empty box: Run is disabled. Over 500 characters: the box stops accepting text." },
+    { title: "Reading the policy", nodes: ["n-typed", "n-parse", "n-levers"], edges: ["e-typed-parse", "e-parse-levers"],
+      text: "Typed policies only. The route sends the text to Claude Haiku 5.5 with your parser prompt. The reply is forced into the lever shape, then checked again with zod.",
+      files: ["app/api/parse/route.ts", "prompts/parse-policy.md", "lib/schemas.ts"], prd: ["How the Policy Was Read", "States and Boundaries"], fails: "“Couldn't read that one right now. Try again, or tap a preset.” The town stays as it was. Not a policy: the AI's reason appears under the box." },
+    { title: "Running the numbers", nodes: ["n-levers", "n-preset", "n-residents", "n-engine", "n-screen"], edges: ["e-preset-levers", "e-res-engine", "e-levers-engine", "e-engine-screen"],
+      text: "The engine applies the levers to each budget: monthly change, spare money before and after, % of income, % of spare money, verdict. Summary, chart, cards and panel update in place. No network call.",
+      files: ["lib/engine.ts", "lib/format.ts", "components/StatusLine.tsx", "components/ChangeChart.tsx", "components/PolicyPanel.tsx", "components/SpareMoneyBar.tsx"], prd: ["Verdicts", "Town Summary", "Monthly Change Chart", "Expected Preset Results"], fails: "Can't fail at runtime by design: pure code, pinned by the preset tests." },
+    { title: "Writing diaries", nodes: ["n-levers", "n-droute", "n-writer", "n-lines", "n-dcards"], edges: ["e-levers-droute", "e-droute-writer", "e-writer-lines", "e-lines-dcards"],
+      text: "The diary route re-runs the engine, sends each resident's exact card strings to Claude Sonnet 5.5 with your diary prompt, and streams back one JSON object per line. Each good line lands on its card.",
+      files: ["app/api/diaries/route.ts", "lib/diaryInput.ts", "prompts/write-diaries.md", "components/DiaryNote.tsx"], prd: ["Diaries"], fails: "A bad line is dropped; that card later says “Diary didn't come through”." },
+    { title: "Done, or partly done", nodes: ["n-lines", "n-dcards", "n-screen"], edges: ["e-dcards-screen"], labels: ["l-dcards-screen"],
+      text: "When the stream ends, or after 20 seconds, cards still waiting say “Diary didn't come through”. “Retry diaries” asks for only those residents.",
+      files: ["lib/useCrashTest.ts"], prd: ["States and Boundaries"], fails: "Numbers, chart and verdicts always stay, whatever happens to the diaries." },
+    { title: "Next policy", nodes: ["n-chip", "n-typed", "n-screen"], edges: [],
+      text: "A new run cancels the old diary request and ignores anything still arriving from it. Cards never move, so each one changes colour in place: the flip.",
+      files: ["lib/useCrashTest.ts"], prd: ["The Core Journey", "States and Boundaries"], fails: "Late diaries from an earlier run never land on the new cards." }
+  ];
+
+  var stepper = document.getElementById("stepper");
+  var list = document.getElementById("steplist");
+  var panel = document.getElementById("panel");
+  var parts = Array.prototype.slice.call(document.querySelectorAll(".node, .edge, .edge-label"));
+  var current = 0;
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  steps.forEach(function (s, i) {
+    var li = document.createElement("li");
+    var b = document.createElement("button");
+    b.type = "button";
+    b.innerHTML = '<span class="n">' + (i === 0 ? "★" : i) + "</span> " + esc(s.title);
+    b.addEventListener("click", function () { show(i); });
+    li.appendChild(b);
+    list.appendChild(li);
+  });
+
+  function show(i) {
+    current = i;
+    var s = steps[i];
+    parts.forEach(function (el) {
+      var on;
+      if (el.classList.contains("node")) on = s.nodes === "all" || s.nodes.indexOf(el.id) >= 0;
+      else if (el.classList.contains("edge")) on = s.edges === "all" || s.edges.indexOf(el.id) >= 0;
+      else on = s.edges === "all" || (s.labels || []).indexOf(el.id) >= 0;
+      el.classList.toggle("dim", !on);
+      el.classList.toggle("on", on && s.nodes !== "all");
+    });
+    list.querySelectorAll("button").forEach(function (b, j) { b.setAttribute("aria-pressed", j === i ? "true" : "false"); });
+    var html = '<div class="eyebrow">' + (i === 0 ? "Overview" : "Step " + i + " of " + (steps.length - 1)) + "</div>" +
+      "<h3>" + esc(s.title) + "</h3><p>" + esc(s.text) + "</p><dl class=\"meta\">";
+    if (s.files.length) html += "<dt>Files</dt><dd>" + s.files.map(function (f) { return "<code>" + esc(f) + "</code>"; }).join("") + "</dd>";
+    html += "<dt>PRD</dt><dd>" + s.prd.map(function (p) { return "prd.md › " + esc(p); }).join(" · ") + "</dd></dl>";
+    if (s.fails) html += '<div class="fails"><b>If it goes wrong:</b> ' + esc(s.fails) + "</div>";
+    html += '<div class="nav"><button class="navbtn" type="button" data-d="-1"' + (i === 0 ? " disabled" : "") + '>← Back</button>' +
+      '<button class="navbtn" type="button" data-d="1"' + (i === steps.length - 1 ? " disabled" : "") + ">Next →</button></div>";
+    panel.innerHTML = html;
+    panel.querySelectorAll(".navbtn").forEach(function (b) {
+      b.addEventListener("click", function () { show(current + Number(b.getAttribute("data-d"))); });
+    });
+  }
+
+  stepper.hidden = false;
+  stepper.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowRight" && current < steps.length - 1) { show(current + 1); e.preventDefault(); }
+    if (e.key === "ArrowLeft" && current > 0) { show(current - 1); e.preventDefault(); }
+  });
+  show(0);
+})();
+</script>
+</body>
+</html>
