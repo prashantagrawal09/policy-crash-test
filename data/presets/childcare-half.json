@@ -1,0 +1,17 @@
+{
+  "id": "childcare-half",
+  "chip": "Childcare fees cut by half for working parents",
+  "levers": [
+    {
+      "kind": "percent_change",
+      "target": "childcare",
+      "value": -50,
+      "eligibility": { "mustHaveChildren": true },
+      "description": "Childcare fees are cut by 50% for parents"
+    }
+  ],
+  "assumptions": [
+    "All parents in this town work, so every parent qualifies.",
+    "School fees and tuition aren't included; only childcare is cut."
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "fares-20",
+  "chip": "Bus and train fares rise 20%",
+  "levers": [
+    {
+      "kind": "percent_change",
+      "target": "public_transport",
+      "value": 20,
+      "eligibility": {},
+      "description": "Bus and train fares go up by 20% for everyone"
+    }
+  ],
+  "assumptions": [
+    "No concession discounts are modelled: students and seniors pay the same 20% more."
+  ]
+}

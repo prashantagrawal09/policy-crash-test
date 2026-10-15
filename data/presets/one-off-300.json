@@ -1,0 +1,17 @@
+{
+  "id": "one-off-300",
+  "chip": "$300 one-off payout for adults earning under $3,000 a month",
+  "levers": [
+    {
+      "kind": "one_off_payment",
+      "target": "income",
+      "value": 300,
+      "eligibility": { "minAge": 21, "maxMonthlyIncome": 3000 },
+      "description": "A one-time $300 payment for adults aged 21 and over earning up to $3,000 a month"
+    }
+  ],
+  "assumptions": [
+    "Adults means age 21 and above.",
+    "\"Under $3,000\" is read as \"$3,000 or less\"; nobody in this town earns exactly $3,000."
+  ]
+}

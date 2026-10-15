@@ -51,7 +51,7 @@ Versions were checked on npm on 2026-10-15. The build installs the latest releas
 | Framework | Next.js, App Router | 16.4.x | https://nextjs.org/docs/app | Your choice: one project for the page and the server routes. |
 | UI | React | 19.3.x | https://react.dev | Comes with Next.js. |
 | Language | TypeScript | as installed by create-next-app | https://www.typescriptlang.org/docs/ | Your choice. The engine and schemas share types between page and server. |
-| Styling | Tailwind CSS v4 via `@tailwindcss/postcss` | 4.3.x | https://tailwindcss.com/docs/installation/framework-guides/nextjs | Your choice. |
+| Styling | Tailwind CSS v4 via `@tailwindcss/turbopack` (the create-next-app 16.4 default) | 4.3.x | https://tailwindcss.com/docs/installation/framework-guides/nextjs | Your choice. |
 | AI SDK | `@anthropic-ai/sdk` | 0.134.x | https://github.com/anthropics/anthropic-sdk-typescript | Official SDK: structured output, streaming, typed errors. |
 | Validation | zod | 4.6.x | https://zod.dev | One schema checks preset files, parser replies and diary lines, and feeds the structured-output format. |
 | Tests | Vitest | 5.0.x | https://vitest.dev | Fast TypeScript tests for the engine, formatting, presets and prompt files. |
@@ -346,10 +346,9 @@ Policy Crash Tester/              # repository root
 ├── devpost/                      # planning docs (learner-profile.md is git-ignored)
 ├── .env.example                  # ANTHROPIC_API_KEY=, PARSE_MODEL=claude-haiku-5-5, DIARY_MODEL=claude-sonnet-5-5
 ├── .gitignore                    # existing rules, plus node_modules and .next
-├── next.config.ts
-├── postcss.config.mjs            # @tailwindcss/postcss
+├── next.config.ts                # Tailwind through the @tailwindcss/turbopack loader
 ├── tsconfig.json                 # "@/*" path alias
-├── vitest.config.ts
+├── vitest.config.mts
 ├── package.json                  # scripts: dev, build, start, test, eval:parser, eval:diaries
 └── README.md                     # what it is, setup, tests, evals, recording
 ```

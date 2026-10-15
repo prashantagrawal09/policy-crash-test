@@ -8,3 +8,25 @@
 
 # macOS
 .DS_Store
+
+# dependencies
+/node_modules
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+*.pem
+npm-debug.log*
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts

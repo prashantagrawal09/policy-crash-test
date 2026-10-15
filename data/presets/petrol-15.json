@@ -1,0 +1,16 @@
+{
+  "id": "petrol-15",
+  "chip": "Petrol prices rise 15%",
+  "levers": [
+    {
+      "kind": "percent_change",
+      "target": "private_transport",
+      "value": 15,
+      "eligibility": {},
+      "description": "Private transport costs go up by 15% for everyone"
+    }
+  ],
+  "assumptions": [
+    "All private transport costs (car rental and petrol) are treated as rising 15%, not just petrol."
+  ]
+}

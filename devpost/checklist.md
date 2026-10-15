@@ -9,7 +9,7 @@ Build mode: not chosen yet (asked at the gut check)
 
 ## Slices
 
-- [ ] **1. Tap a preset and see who's hit**
+- [x] **1. Tap a preset and see who's hit**
   Becomes usable: A running page with the 8 residents on screen in their normal state (income, spare money, everyday line), the text box, 4 preset chips and the pinned disclaimer. Tapping a chip fills the box and instantly updates the summary line and every card's verdict, big number, % of income and spare-money line, all from the tested engine. Fares then petrol shows the flip.
   Why now: This is the unique kernel (eight specific people, two lenses, numbers from tested code), so it comes first with the scaffold folded in. It has no AI in it, so every later slice builds on numbers already proven against the acceptance table.
   PRD ref: `prd.md > The Core Journey` (steps 1, 2, 4, 6), `prd.md > Policy Input and Presets`, `prd.md > Town Summary`, `prd.md > Resident Cards`, `prd.md > Verdicts`, `prd.md > Expected Preset Results`, `prd.md > Disclaimer`
@@ -91,4 +91,8 @@ Reflection: not started
 Activity mode: not started
 
 ## Revisions
+
+- Tailwind v4 is wired through `@tailwindcss/turbopack` in `next.config.ts`, with no `postcss.config.mjs` — create-next-app 16.4.1's template replaced the `@tailwindcss/postcss` setup the spec assumed; `spec.md > Stack` and `File Structure` updated.
+- `@types/node` is `^22` instead of the template's `^20` — Vitest 5 requires `@types/node` 22 or newer as a peer; this machine runs Node 22.
+- The Vitest config is `vitest.config.mts` — as `.ts` it loads as CommonJS in this project and Vite warns; `spec.md > File Structure` updated.
 

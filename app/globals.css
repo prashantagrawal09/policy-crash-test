@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+/* Crash test lab report meets personal diary (spec.md > Look and Feel). */
+:root {
+  --paper: #f7f5f0;
+  --ink: #111111;
+  --hazard: #ffd400;
+  --diary-paper: #fbf3e4;
+  --better: #1f8a4c;
+  --barely: #8a8f98;
+  --feels: #d98a00;
+  --hard: #c8322b;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-hazard: var(--hazard);
+  --color-diary: var(--diary-paper);
+  --color-better: var(--better);
+  --color-barely: var(--barely);
+  --color-feels: var(--feels);
+  --color-hard: var(--hard);
+  --font-display: var(--font-archivo);
+  --font-sans: var(--font-inter);
+  --font-diary: var(--font-lora);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* Hazard tape: header accents and spare money below zero. */
+@utility hazard-stripes {
+  background-image: repeating-linear-gradient(-45deg, var(--hazard) 0 8px, var(--ink) 8px 16px);
+}
+
+/* One-off payments: green and white stripes. */
+@utility oneoff-stripes {
+  background-image: repeating-linear-gradient(-45deg, var(--better) 0 4px, #ffffff 4px 8px);
+}
