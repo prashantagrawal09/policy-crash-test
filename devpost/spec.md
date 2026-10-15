@@ -165,7 +165,7 @@ PRD ref: `prd.md > How the Policy Was Read`; `prd.md > States and Boundaries` (c
 ### Diary Route
 `app/api/diaries/route.ts`: `POST`, Node runtime, streaming response.
 - **Input:** `{ policyText, levers, residentIds }`. A run sends all 8 ids; a retry sends only the missing ones. The levers are validated with the schema.
-- **Diary input:** the route re-runs the engine on the server, and `lib/diaryInput.ts` writes one block per requested resident: name, age, role, everyday line, verdict, and the exact card strings ("−$12 a month", "0.9% of income", "$12 = 12% of what's left each month"). It also includes the policy text and the summary line, so Unaffected residents can notice who is affected (prompt rule 5).
+- **Diary input:** the route re-runs the engine on the server, and `lib/diaryInput.ts` writes one block per requested resident: name, age, role, everyday line, verdict, and the exact card strings ("−$12 a month", "0.9% of income", "$12 = 12% of what's left each month"). It also includes the policy text and the summary line, so Unaffected residents can notice who is affected (prompt rule 5), and, for residents whose monthly budget changes, their spare money after, so the writer never does sums.
 - **Call:** `DIARY_MODEL` through `client.messages.stream()` (the beta variant if small call 11 stands), with:
   - `prompts/write-diaries.md` as the system prompt;
   - `output_config: { effort: "low" }` and `max_tokens: 16000`;
@@ -226,7 +226,7 @@ Opt-in scripts in `evals/` that use your key. Each prints a pass/fail table and 
 |---|---|---|
 | 1 | Bus and train fares rise 10% | public_transport, +10 |
 | 2 | Electricity bills cut 20% | utilities, −20 (your sign check) |
-| 3 | Childcare fees cut by half for working parents | childcare, −50, mustHaveChildren |
+| 3 | Childcare fees cut by half for working parents | childcare, −50, for parents (`mustHaveChildren` or the `has_children` tag, which the engine treats the same) |
 | 4 | School fees go up 5% | education, +5 |
 | 5 | $300 one-off payout for adults earning under $3,000 a month | one_off_payment 300, maxMonthlyIncome 3000 |
 | 6 | HDB households get $50 off utilities every month | fixed_monthly_change utilities −50, all three HDB housing types |
@@ -238,7 +238,7 @@ Opt-in scripts in `evals/` that use your key. Each prints a pass/fail table and 
 **`evals/diaries.eval.ts`:** the 4 presets, run 2 times each on `DIARY_MODEL`. Each run checks that:
 - all 8 diaries arrive;
 - each mood fits its verdict (prompt rule 4);
-- every dollar amount in a diary appears in that resident's card strings (`prd.md` small call 12);
+- every dollar amount in a diary is one the writer was given: that resident's card strings and spare money after, or the policy text itself (`prd.md` small call 12);
 - each reaction is at most 12 words and each diary 2–4 sentences;
 - no word from a short politics list appears.
 

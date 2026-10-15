@@ -32,8 +32,21 @@ describe("diary input", () => {
         "Change: −$12 a month",
         "Share of income: 0.9% of income",
         "Spare money: $12 = 12% of what's left each month",
+        "Spare money after: $88 a month",
       ].join("\n"),
     );
+  });
+
+  it("gives the engine's spare money after, so the writer never does sums", () => {
+    const blockFor = (presetId: string, id: string) => {
+      const preset = getPreset(presetId)!;
+      return buildDiaryInput({ policyText: preset.chip, residents: RESIDENTS, results: runTown(RESIDENTS, preset.levers), ids: [id] });
+    };
+    expect(blockFor("childcare-half", "nurul")).toContain("Spare money after: $900 a month");
+    expect(blockFor("petrol-15", "faizal")).toContain("Spare money after: none, $200 short each month");
+    // A one-off doesn't change monthly spare money, and Unaffected residents get no "after" line.
+    expect(blockFor("one-off-300", "chloe")).not.toContain("Spare money after");
+    expect(blockFor("fares-20", "faizal")).not.toContain("Spare money after");
   });
 
   it("tells Unaffected residents their budget doesn't change", () => {

@@ -49,7 +49,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Type "Make transport cheaper for old folks" and read the panel's assumptions; type "What should I eat for lunch?" and read the reason under the box; edit a chip's text, run it, and check the panel now says the AI read it.
   Commit: `Read typed policies with the parser route`
 
-- [ ] **5. Live evals for the AI parts**
+- [x] **5. Live evals for the AI parts**
   Becomes usable: `npm run eval:parser` and `npm run eval:diaries` print pass/fail tables: 10 fixture policies × 3 runs (your electricity sign check included), and the 4 presets × 2 diary runs, each diary checked against its own card.
   Why now: Both AI calls exist now, so their behaviour can be measured across repeats. This is your stated learning goal and the guard against a misread policy or a diary that contradicts its card.
   PRD ref: `prd.md > Diaries` (each diary agrees with its card), `prd.md > How the Policy Was Read` (a vague policy)
@@ -98,3 +98,7 @@ Activity mode: not started
 - `lib/prompts.ts` caches the prompts only in production and re-reads them on every call in development — so prompt edits apply without a restart while you iterate; `spec.md > Prompt and Client Setup` updated.
 - The parser sends zod's own JSON Schema (minus `$schema`) as its structured-output format instead of `zodOutputFormat` — SDK 0.134's `zodOutputFormat` moves every `enum` into a description, so the model wouldn't be held to the allowed targets, kinds, housing types and tags; the reply is still checked by zod (the spec's planned fallback). `spec.md > Parse Route` updated.
 - The parse call lives in a new `lib/readPolicy.ts`, shared by the route and the parser eval so the eval tests exactly what the app runs; `spec.md > File Structure` updated.
+- The diary call lives in a new `lib/writeDiaries.ts`, shared by the route and the diary eval, for the same reason.
+- Parser eval case 3 accepts `tagsAny: ["has_children"]` as well as `mustHaveChildren: true` — the first live run returned the tag 3/3 times; the engine selects the same residents either way, so the check now tests who is eligible, not which field was used (learner's decision).
+- The diary eval's amount check allows amounts quoted from the policy text — diaries quoted "$300" and "under $3,000" from the policy itself, which is accurate (learner's decision).
+- The diary input now gives each affected resident's spare money after, from the engine, and the eval allows it — the model was computing totals itself (Nurul: "from $500 to $900"); now every number a diary states comes from tested code (learner's decision). After these three: parser 10/10 (3 runs each), diaries 8/8.

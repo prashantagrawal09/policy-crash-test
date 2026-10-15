@@ -50,6 +50,11 @@ export function residentBlock(resident: Resident, result: ResidentResult): strin
     if (card.monthlyEquivalent) lines.push(`Spread out: ${card.monthlyEquivalent}`);
     lines.push(`Share of income: ${card.incomeLine}`);
     lines.push(`Spare money: ${card.spareLine}`);
+    // Given so the writer never has to do sums: every number it can state comes from the engine.
+    if (result.cents.monthly !== 0) {
+      const after = (result.cents.spare + result.cents.monthly) / 100;
+      lines.push(`Spare money after: ${after < 0 ? `none, ${money(after)} short each month` : `${money(after)} a month`}`);
+    }
   }
   return lines.join("\n");
 }
