@@ -84,7 +84,8 @@ From `prd.md > Look and Feel`, as build instructions. Tailwind v4 handles all of
 - **Density and energy:** spacious, like The Pudding: plenty of white space, content up to about 1200px wide, big numbers first on each card.
 - **Copy tone:** plain and calm. Labels are short, like a lab report. The diaries are the only first-person voice.
 - **Motion:** a soft shimmer while waiting; cards change colour with a short transition so the flip reads on video. Both switch off for people who prefer reduced motion.
-- **Layout:** cards four across on wide screens, two on tablets, one column on phones (`prd.md` small call 17).
+- **Layout:** cards four across on wide screens, two on tablets, one column on phones (`prd.md` small call 17). The town map sits between the summary and the chart at full width; on phones it pans sideways inside its frame.
+- **Characters and the town map:** flat, friendly vector illustration in the same palette: solid fills, thin outlines, no gradients or shadows. Faces react through brows, eyes and mouth (plus blush or a sweat drop). Pulses, floats and bubbles switch off for people who prefer reduced motion.
 
 ## Components
 
@@ -207,6 +208,8 @@ PRD ref: `prd.md > The Core Journey`, `prd.md > States and Boundaries`.
 
   Implements `prd.md > Resident Cards`, `prd.md > Diaries`.
 - **`Disclaimer`:** a slim footer pinned to the bottom. Implements `prd.md > Disclaimer`.
+- **`ResidentAvatar`:** each resident drawn in inline SVG from shared parts (head, face, outfit, hair, props), with an `expression` prop: neutral, happy, relieved, worried or stressed. `lib/expressions.ts` picks the expression: the diary's mood once it lands, otherwise the verdict's (better off → happy, barely affected or unaffected → neutral, feels it → worried, hard hit → stressed). Used on the cards, the chart rows and the map pins. Implements `prd.md > Look and Feel` (avatars).
+- **`TownMap`:** an inline SVG neighbourhood with landmarks and each resident's home. `lib/townMap.ts` (pure) says which landmarks a policy's levers light up (by lever target) and who gets coins (one-off payments, from the engine results). Pins are buttons: verdict-coloured ring, impact pulse, reaction bubble as diaries land, and selecting one scrolls to the card. Implements `prd.md > Town Map`.
 
 ### Tests
 Vitest. Run them with `npm test`; they work offline and need no key.
@@ -313,6 +316,8 @@ Policy Crash Tester/              # repository root
 │   ├── ChangeChart.tsx           # bars from a zero line, verdict colours, striped one-offs
 │   ├── PolicyPanel.tsx           # "How the AI read this policy" / "How this preset is set up"
 │   ├── ResidentCard.tsx          # avatar, numbers, verdict badge, before/after states
+│   ├── ResidentAvatar.tsx        # the 8 illustrated characters and their expressions
+│   ├── TownMap.tsx               # the reacting town: landmarks, homes, pins, bubbles
 │   ├── SpareMoneyBar.tsx         # spare-money bar, 10% tick, red/green shading, hazard spill
 │   ├── DiaryNote.tsx             # mood tag, reaction, diary; shimmer and failed states
 │   └── Disclaimer.tsx            # pinned footer
@@ -320,6 +325,8 @@ Policy Crash Tester/              # repository root
 │   ├── schemas.ts                # zod: Lever, Eligibility, ParseResult, PresetFile, DiaryLine
 │   ├── engine.ts                 # pure: eligibility, levers → numbers → verdict
 │   ├── format.ts                 # pure: dollars, percentages, card lines, summary
+│   ├── expressions.ts            # pure: verdict or diary mood -> face expression
+│   ├── townMap.ts                # pure: lever targets -> lit landmarks, one-off coins
 │   ├── presets.ts                # loads and validates data/presets/*.json
 │   ├── diaryInput.ts             # builds each resident's block for the diary writer
 │   ├── readPolicy.ts             # the parse call, shared by the route and the parser eval (server only)

@@ -14,8 +14,8 @@ Source: `scope.md > The Core Loop`, `scope.md > What "Working" Looks Like`.
 1. **Meet the town.** The page opens on the title, a big text box, the "Run the crash test" button and 4 preset chips. Below them, the 8 residents are already on screen in their normal state: who they are, what they earn, what they have left each month, and a line about their everyday life.
 2. **Pick a policy.** Tapping a preset chip fills the text box and runs it straight away. Or they type or paste their own policy and press "Run the crash test".
 3. **Wait a moment.** The cards stay where they are with a soft shimmer, and a status line steps through "Reading the policy", "Running the numbers", "Writing diaries". Presets skip the first step.
-4. **See the spread.** A one-line town summary appears ("2 feel it, 4 barely affected, 2 unaffected"), then the chart of each person's monthly change. Each card updates in place: verdict colour and word, the big change number, and the spare-money bar showing how much of their spare money the policy eats or adds. A panel explains how the policy was read.
-5. **Hear from them.** Each person's diary fills in as it arrives: a mood, a short reaction and a few first-person sentences.
+4. **See the spread.** A one-line town summary appears ("2 feel it, 4 barely affected, 2 unaffected"), the town map lights up the places the policy touches and flips each resident's pin to their verdict colour, then the chart of each person's monthly change. Each card updates in place: verdict colour and word, the big change number, and the spare-money bar showing how much of their spare money the policy eats or adds. A panel explains how the policy was read.
+5. **Hear from them.** Each person's diary fills in as it arrives: a mood, a short reaction and a few first-person sentences. Their reaction pops up over their home on the map, and their face changes to match.
 6. **Try the next one.** Another chip or a typed policy runs on the same town. Cards never move, so each person's card changes colour in place. That's how the flip shows.
 
 Success is the 90-second demo in `scope.md > What "Working" Looks Like`, with the on-screen results listed under **Expected Preset Results**.
@@ -25,9 +25,10 @@ One page, top to bottom:
 1. **Header:** the title "Policy Crash Test" with hazard-stripe accents.
 2. **Policy input:** the big text box, the "Run the crash test" button and the 4 preset chips. Messages (can't read it, not a policy) appear right under the box.
 3. **Status and town summary line:** the waiting steps while running; the one-line summary once numbers are in.
-4. **Chart and policy panel:** the monthly-change chart, with the policy panel beside it on wide screens and below it on narrow ones.
-5. **Resident cards:** 8 cards in a fixed order that never changes: Mdm Lim, Faizal, Chloe, the Gohs, Uncle Raju, Nurul, Marcus, Tan Wei Jie. Four across and two down on a wide screen.
-6. **Disclaimer:** a slim footer, always visible.
+4. **Town map:** an illustrated neighbourhood with every resident at home; the hero of the page once a policy runs.
+5. **Chart and policy panel:** the monthly-change chart, with the policy panel beside it on wide screens and below it on narrow ones.
+6. **Resident cards:** 8 cards in a fixed order that never changes: Mdm Lim, Faizal, Chloe, the Gohs, Uncle Raju, Nurul, Marcus, Tan Wei Jie. Four across and two down on a wide screen.
+7. **Disclaimer:** a slim footer, always visible.
 
 On a phone, everything stacks into one column and stays usable. The demo video is recorded on desktop.
 
@@ -39,7 +40,7 @@ Source: `scope.md > Inspiration & Identity`.
 - **Reference:** The Pudding (https://pudding.cool): human data storytelling, lots of white space.
 - **Verdict colours:** green = Better off, grey = Barely affected, amber = Feels it, red = Hard hit. The verdict word is always shown, so colour is never the only signal. Unaffected cards keep the calm "before" look, slightly faded, with an outline badge.
 - **Fonts:** Archivo Black for headings, Inter for numbers and labels, Lora italic for diaries. (See small call 15 on the condensed look.)
-- **Avatars:** initials in a circle plus a small role icon (bowl, car, book, etc.). No photos of real people.
+- **Avatars:** each resident is a flat, friendly illustrated character that shows their role (hawker apron, driver's cap, student backpack and glasses, the couple, white hair and walking stick, scrubs and stethoscope, hi-vis vest, hoodie and headphones). Their face reacts: calm, smiling, relieved, worried or stressed. No photos of real people.
 - **Hazard stripes** also mark spare money going below zero.
 
 ## Features and Behavior
@@ -58,6 +59,20 @@ Source: `scope.md > Inspiration & Identity`.
 
 - [ ] The counts add up to 8 and match the card badges.
 
+### Town Map
+An illustrated neighbourhood between the summary and the chart: the residents' homes (HDB blocks, a condo, rented homes, a family home) and the places their money goes (MRT station and bus stop, petrol station, hawker centre, childcare centre, polyclinic, university, power and water, a mall, offices).
+- Each resident is a pin, drawn as their character, at home. Before any run the town is calm: neutral faces, nothing lit.
+- When a policy runs, each pin takes its verdict colour with a short impact pulse, and the places the policy touches light up: public transport lights the MRT station and bus stop, private transport the petrol station, childcare the childcare centre, and so on. A one-off payment drops coins over the residents who get it.
+- As each diary arrives, that resident's reaction pops up over their pin for a few seconds; hovering over or focusing a pin shows it again.
+- Selecting a pin brings that resident's card into view and highlights it.
+- The map shows no numbers of its own: only verdict colours, lit places and the diaries' reactions, so it can never disagree with a card.
+
+- [ ] Fares lights the MRT station and the bus stop; petrol lights the petrol station; childcare lights the childcare centre; the payout drops coins over Chloe and Uncle Raju only.
+- [ ] Every pin's colour matches its card's verdict.
+- [ ] Selecting a pin brings its card into view.
+- [ ] On a phone the map can be panned sideways inside its frame, and nothing else on the page scrolls sideways.
+- [ ] With reduced motion, nothing pulses or floats.
+
 ### Monthly Change Chart
 - One bar per resident, in card order, showing each person's monthly change from a zero line: losses one way, gains the other.
 - Bars use the verdict colours, so a short amber bar (Raju, −$12) sits beside a longer grey one (Nurul, −$40).
@@ -68,7 +83,7 @@ Source: `scope.md > Inspiration & Identity`.
 - [ ] The $300 one-off preset shows striped green bars of +$25 for Chloe and Uncle Raju, and $0 for everyone else.
 
 ### Resident Cards
-**Before a run:** avatar (initials and role icon), name, age, role, monthly income, monthly spare money, a one-line description of their everyday life, and a full spare-money bar.
+**Before a run:** avatar (their illustrated character), name, age, role, monthly income, monthly spare money, a one-line description of their everyday life, and a full spare-money bar.
 
 **After a run, each card shows:**
 - the verdict word and colour;
@@ -163,6 +178,7 @@ Computed from the rules above, using the same check that shaped the demo.
 - Presets with fixed, hand-checked settings; typed policies read live by the AI, with the "not a policy" and "couldn't read" messages.
 - The verdict rules and the spare-money bar, with card numbers that match the engine exactly.
 - Diaries for all 8, arriving after the numbers, with one retry for the town.
+- Illustrated characters whose faces react, and the town map (an upgrade agreed after the build).
 - The waiting, failure and empty states under **States and Boundaries**.
 
 ## Deferred From the POC
@@ -171,7 +187,6 @@ Computed from the rules above, using the same check that shaped the demo.
 ## Possible Later Enhancements
 - Compare two policies side by side.
 - "Citizen like me": add your own resident.
-- A town "reacting" loading animation.
 
 ## Non-Goals
 - **Login or accounts:** one session is the whole experience.
@@ -200,5 +215,5 @@ Computed from the rules above, using the same check that shaped the demo.
 13. The Run button is disabled while the box is empty. Typed text is capped at about 500 characters (a headline or short paragraph). Hostile or hateful input gets the "not a policy" treatment.
 14. The disclaimer is a slim footer pinned to the bottom of the screen: "Fictional residents, illustrative numbers. Not financial advice or a forecast."
 15. Archivo Black is heavy but not condensed. For your "bold condensed headings", headings use Archivo (the same family on Google Fonts) at a black weight and condensed width. Veto to keep Archivo Black as is.
-16. Role icons: bowl (Mdm Lim), car (Faizal), book (Chloe), key (the Gohs), walking stick (Uncle Raju), medical cross (Nurul), delivery truck (Marcus), laptop (Tan Wei Jie).
+16. Role icons: bowl (Mdm Lim), car (Faizal), book (Chloe), key (the Gohs), walking stick (Uncle Raju), medical cross (Nurul), delivery truck (Marcus), laptop (Tan Wei Jie). *Superseded by the illustrated characters, which carry each role in the drawing.*
 17. On a phone, everything stacks into one column; the demo video is recorded on desktop.

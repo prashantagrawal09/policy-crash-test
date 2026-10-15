@@ -69,22 +69,56 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Run `npm run build && npm start`, rehearse the 90-second demo at desktop width, then open the page in a narrow window or on your phone.
   Commit: `Polish motion and phone layout, add README`
 
+- [ ] **7. Characters whose faces react**
+  Becomes usable: Every resident is drawn as an illustrated character carrying their role (hawker apron, driver's cap, student backpack and glasses, the couple, white hair and walking stick, scrubs and stethoscope, hi-vis vest, hoodie and headphones) in place of the initials. They appear on the cards and beside the chart's names. Faces react: calm before a run and when unaffected or barely affected, a smile when better off, worried brows when they feel it, stressed with a sweat drop when hard hit, then the diary's own mood once it lands.
+  Why now: The map's pins reuse these characters, so they come first; it is contained, and it changes the existing cards straight away.
+  PRD ref: `prd.md > Look and Feel` (avatars), `prd.md > Resident Cards`
+  Spec ref: `spec.md > Components` (Page and UI Components: ResidentAvatar), `spec.md > Look and Feel` (characters and the town map)
+  Build: Add `lib/expressions.ts` (verdict or diary mood → expression) with `tests/expressions.test.ts`. Add `components/ResidentAvatar.tsx`: inline SVG characters built from shared parts with an `expression` prop. Use it in `ResidentCard` (with a verdict-coloured ring after a run) and in the `ChangeChart` name column.
+  Verify (mechanical): `npm test` passes, including every verdict and mood mapping; `npm run build` passes; in the browser all 8 characters render before a run with calm faces. Fares makes Chloe and Uncle Raju worried while Faizal and Marcus stay calm, petrol makes Faizal stressed, and childcare makes Faizal and Nurul smile. Nothing scrolls sideways at 375 px.
+  Learner check: Tap fares, then petrol, and watch the faces change. Say whether each character reads as who they are.
+  Commit: `Draw the residents as characters whose faces react`
+
+- [ ] **8. The town reacts on a map**
+  Becomes usable: An illustrated neighbourhood sits between the summary and the chart, with every resident's pin at home. When a policy runs, the places it touches light up: fares the MRT station and bus stop, petrol the petrol station, childcare the childcare centre, and typed policies by their lever targets. Pins flip to their verdict colours with an impact pulse, coins drop over whoever gets a one-off, reactions pop up as diaries land, and selecting a pin brings that card into view.
+  Why now: It's the hero of the upgrade and uses the characters from slice 7. It reads the same engine output, so no numbers change.
+  PRD ref: `prd.md > Town Map`, `prd.md > Screens and Layout`, `prd.md > The Core Journey` (steps 4–5)
+  Spec ref: `spec.md > Components` (Page and UI Components: TownMap), `spec.md > Look and Feel`
+  Build: Add `lib/townMap.ts` (lever targets → lit landmarks; one-off coins from the results) with `tests/townMap.test.ts`. Add `components/TownMap.tsx`: an inline SVG scene with landmarks, homes, pins as keyboard-reachable buttons, reaction bubbles and coins, with motion off for reduced motion. Place it between the status line and the chart.
+  Verify (mechanical): `npm test` passes, including landmarks for every lever target and coins only for one-off recipients; `npm run build` passes. In the browser at 375, 768 and 1440 px: the map shows, the page doesn't scroll sideways, fares lights the MRT and bus stop, petrol lights the petrol station, every pin colour matches its card, bubbles appear as diaries land, and selecting a pin brings its card into view.
+  Learner check: Run fares, then petrol, on the map and watch the town flip; select a pin. Say what you'd change before the polish slice.
+  Commit: `Add a town map that reacts to each policy`
+
+- [ ] **9. Impact polish**
+  Becomes usable: When a policy lands, a short crash-test impact flash plays, big numbers count up to their values, and the cards flip smoothly, all switched off for reduced motion. The README and app map describe the characters and the map.
+  Why now: Polish comes last, once the characters and the map work and you've reacted to them.
+  PRD ref: `prd.md > Look and Feel`, `prd.md > Town Map`
+  Spec ref: `spec.md > Look and Feel`
+  Build: Add a count-up for the cards' big numbers (final value rendered straight away for reduced motion) and an impact flash when a run lands. Make a final layout pass, update `README.md`, and refresh `devpost/app-map.html` for the new pieces.
+  Verify (mechanical): `npm test` and `npm run build` pass. With reduced motion emulated, nothing animates. In production mode the 90-second demo runs with the map, with all 8 diaries inside 15 seconds, and nothing scrolls sideways at 375 px.
+  Learner check: Rehearse the demo in production mode with the map and say what you'd change.
+  Commit: `Polish the impact moment and refresh the docs`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 2: all 4 presets with cards, bars, chart and panel; approve the 8 everyday lines and the look before diaries and the parser build on them. Learner: "Looks good to me. Keep the everyday lines as they are."
 - [x] Final kick-the-tires exploration and feedback completed — after slice 6, in production mode. Learner: "I tried it in production mode: the demo, awkward inputs and phone width all work."
+- [ ] Upgrade explored — after slice 8: the characters and the town map, before the polish slice
+- [ ] Final kick-the-tires after the upgrade — after slice 9, in production mode
 
 ## Final Review
 
 No changes needed: the learner tried the demo, awkward inputs and phone width in production mode and asked for no revisions.
 
 - [x] Final review complete — feedback resolved and learner confirms ready to ship. Learner: "It's ready to ship, no changes needed."
+- [ ] Upgrade final review complete — feedback resolved and learner confirms the upgraded app is ready to ship
 
 ## Code Tour and App Map
 
 - [x] Learning activity complete — prior practice connected: the slice 5 eval-failure investigation (focused alternative, done during the build)
 - [x] Optional edit and transfer reflection addressed — edit not applicable; transfer question offered at the wrap-up
 - [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [ ] `devpost/app-map.html` refreshed for the characters and the town map (no repeat of the learning activity)
 
 Activity and evidence: Prior practice, connected at the wrap-up. In slice 5 the first live eval run failed (parser 9/10, diaries 4/8). Reading the actual outputs showed equivalent fields, quoted policy amounts and correct arithmetic, not wrong numbers on screen. The learner chose to fix the eval definitions and give the diary writer the engine's spare money after, instead of changing the prompts; the re-run passed 10/10 and 8/8. Evidence: Revisions above, `evals/parser.eval.ts`, `evals/diaries.eval.ts`, `lib/diaryInput.ts` (`residentBlock`).
 Route and stops: A reference route in the app map, not toured: `lib/useCrashTest.ts` (`startRun`), then `lib/engine.ts` (`verdict`), then `tests/presets.test.ts` ("Uncle Raju feels it").
@@ -104,3 +138,4 @@ Activity mode: Prior practice connected (focused alternative), plus the app map.
 - Parser eval case 3 accepts `tagsAny: ["has_children"]` as well as `mustHaveChildren: true` — the first live run returned the tag 3/3 times; the engine selects the same residents either way, so the check now tests who is eligible, not which field was used (learner's decision).
 - The diary eval's amount check allows amounts quoted from the policy text — diaries quoted "$300" and "under $3,000" from the policy itself, which is accurate (learner's decision).
 - The diary input now gives each affected resident's spare money after, from the engine, and the eval allows it — the model was computing totals itself (Nurul: "from $500 to $900"); now every number a diary states comes from tested code (learner's decision). After these three: parser 10/10 (3 runs each), diaries 8/8.
+- Slices 7–9 added after the final review, at the learner's request ("build it crazy"): illustrated characters whose faces react and a town map that reacts to each policy. This was the scope's own Later item "Town reacting loading animation". `scope.md`, `prd.md` (new `Town Map` section) and `spec.md` (`ResidentAvatar`, `TownMap`) were updated with the learner's agreement. Presentation only: the numbers, tests and evals don't change.

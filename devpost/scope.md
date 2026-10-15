@@ -43,13 +43,13 @@ Proof it works: all 4 presets give sensible results in under 15 seconds; card nu
 - A plain TypeScript engine with the income/savings verdict, unit-tested.
 - Results: 8 cards, a bar chart, the "How the AI read this policy" panel and the disclaimer. Numbers and chart appear first; diaries from one LLM call fill in as they arrive. If streaming fights us, diaries can land together.
 - A handful of parser checks (from the learning goal: test the LLM output, not just the engine).
+- **Upgrade after the build (agreed 2026-10-16):** each resident is drawn as an illustrated character whose face reacts to their verdict and diary mood, and an illustrated town map above the chart reacts to each policy. Presentation only: the numbers, verdicts and checks don't change.
 
 Full data, rules and the demo check: `devpost/idea-brief.md`.
 
 ## Later
 - Compare two policies side by side.
 - "Citizen like me": add your own citizen.
-- Town "reacting" loading animation.
 
 ## Explicitly Cut
 - **Login, database, saving results:** the demo is one session; nothing needs to persist.
