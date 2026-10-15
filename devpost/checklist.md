@@ -72,23 +72,25 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 2: all 4 presets with cards, bars, chart and panel; approve the 8 everyday lines and the look before diaries and the parser build on them. Learner: "Looks good to me. Keep the everyday lines as they are."
-- [ ] Final kick-the-tires exploration and feedback completed — after slice 6, in production mode
+- [x] Final kick-the-tires exploration and feedback completed — after slice 6, in production mode. Learner: "I tried it in production mode: the demo, awkward inputs and phone width all work."
 
 ## Final Review
 
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+No changes needed: the learner tried the demo, awkward inputs and phone width in production mode and asked for no revisions.
+
+- [x] Final review complete — feedback resolved and learner confirms ready to ship. Learner: "It's ready to ship, no changes needed."
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — prior practice connected: the slice 5 eval-failure investigation (focused alternative, done during the build)
+- [x] Optional edit and transfer reflection addressed — edit not applicable; transfer question offered at the wrap-up
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: not started
-Route and stops: not started
-Edit outcome: not started
-Reflection: not started
-Activity mode: not started
+Activity and evidence: Prior practice, connected at the wrap-up. In slice 5 the first live eval run failed (parser 9/10, diaries 4/8). Reading the actual outputs showed equivalent fields, quoted policy amounts and correct arithmetic, not wrong numbers on screen. The learner chose to fix the eval definitions and give the diary writer the engine's spare money after, instead of changing the prompts; the re-run passed 10/10 and 8/8. Evidence: Revisions above, `evals/parser.eval.ts`, `evals/diaries.eval.ts`, `lib/diaryInput.ts` (`residentBlock`).
+Route and stops: A reference route in the app map, not toured: `lib/useCrashTest.ts` (`startRun`), then `lib/engine.ts` (`verdict`), then `tests/presets.test.ts` ("Uncle Raju feels it").
+Edit outcome: Not applicable; the focused alternative used the learner's eval decisions in place of a code edit.
+Reflection: Optional transfer question offered at the wrap-up; any answer is kept only in the ignored learner profile.
+Activity mode: Prior practice connected (focused alternative), plus the app map. The map was checked: all 41 paths and anchors exist, it works offline with no scripts or network, and it fits at 375 px. It is a snapshot of code commit `2b07b8e`.
 
 ## Revisions
 

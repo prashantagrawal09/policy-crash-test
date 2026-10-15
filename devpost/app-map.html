@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Policy Crash Test: app map</title>
+<style>
+  :root {
+    --paper: #f7f5f0; --ink: #111111; --muted: #4a4a4a; --line: #d8d4ca;
+    --hazard: #ffd400; --card: #ffffff; --better: #1f8a4c; --feels: #9a6200; --hard: #c8322b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #16150f; --ink: #f3f1ea; --muted: #c4c0b4; --line: #3a372e; --card: #201f18; --better: #5cc98a; --feels: #f0b44a; --hard: #f07a72; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .tape { height: 10px; background: repeating-linear-gradient(-45deg, #ffd400 0 8px, #111 8px 16px); }
+  main { max-width: 860px; margin: 0 auto; padding: 28px 16px 64px; }
+  h1 { font-size: 2rem; line-height: 1.1; margin: 0.4em 0 0.2em; letter-spacing: -0.01em; }
+  h2 { font-size: 1.2rem; margin: 2.2em 0 0.6em; padding-top: 0.6em; border-top: 2px solid var(--ink); }
+  h3 { font-size: 1rem; margin: 1.2em 0 0.3em; }
+  p, li { max-width: 72ch; }
+  .kicker { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+  code { font: 0.9em ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--card); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; overflow-wrap: anywhere; }
+  .pieces { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; padding: 0; list-style: none; }
+  .pieces li { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .pieces strong { display: block; }
+  .tag { display: inline-block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border-radius: 4px; padding: 1px 6px; margin-bottom: 4px; }
+  .tag.code { background: var(--ink); color: var(--paper); }
+  .tag.ai { background: var(--hazard); color: #111; }
+  ol.flow { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; counter-reset: step; }
+  ol.flow li { counter-increment: step; display: grid; grid-template-columns: 2.2rem 1fr; gap: 10px; align-items: start; background: var(--card); border: 1px solid var(--line); border-left: 6px solid var(--ink); border-radius: 8px; padding: 10px 12px; }
+  ol.flow li::before { content: counter(step); font-weight: 800; font-size: 1.1rem; width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; background: var(--hazard); color: #111; }
+  ol.flow li.ai { border-left-color: var(--hazard); }
+  ol.flow li.seen { border-left-color: var(--better); }
+  .where { display: block; font-size: 0.9rem; color: var(--muted); }
+  .legend { font-size: 0.85rem; color: var(--muted); margin-top: 8px; }
+  .route li { margin-bottom: 0.9em; }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin-top: 10px; }
+  summary { cursor: pointer; font-weight: 600; }
+  summary:focus-visible, a:focus-visible { outline: 3px solid var(--hazard); outline-offset: 2px; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  th { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .practice { background: var(--card); border: 2px solid var(--ink); border-radius: 10px; padding: 14px 18px; }
+  .practice p { margin: 0.5em 0; }
+  pre { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; overflow-x: auto; font: 0.9em ui-monospace, SFMono-Regular, Menlo, monospace; }
+  footer { margin-top: 3em; font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 1em; }
+</style>
+</head>
+<body>
+<div class="tape" aria-hidden="true"></div>
+<main>
+  <p class="kicker">Policy Crash Test · app map</p>
+  <h1>How the app fits together</h1>
+  <p>Paste a policy or tap a preset, and eight fictional Singapore residents react: who gains, who loses, by how much, and how it feels. <strong>Every number comes from tested code; the AI only reads the policy and writes the diaries.</strong> This page is a short guide to where things live, so you know where a future change belongs.</p>
+
+  <h2>The main pieces</h2>
+  <ul class="pieces">
+    <li><span class="tag code">Code</span><strong>The town and the presets</strong>8 residents with budgets in 9 categories, and 4 hand-checked lever files. <span class="where"><code>data/residents.ts</code>, <code>data/presets/*.json</code></span></li>
+    <li><span class="tag code">Code</span><strong>The engine</strong>Applies levers in whole cents and gives each person a verdict from two lenses: % of income and % of spare money. <span class="where"><code>lib/engine.ts</code>, <code>lib/format.ts</code></span></li>
+    <li><span class="tag ai">AI</span><strong>The parser</strong>Claude Haiku 5.5 turns typed text into levers through structured output, checked by zod. <span class="where"><code>lib/readPolicy.ts</code>, <code>app/api/parse/route.ts</code>, <code>prompts/parse-policy.md</code></span></li>
+    <li><span class="tag ai">AI</span><strong>The diary writer</strong>Claude Sonnet 5.5 gets each resident's exact card numbers and streams one diary per line. <span class="where"><code>lib/writeDiaries.ts</code>, <code>lib/diaryInput.ts</code>, <code>app/api/diaries/route.ts</code>, <code>prompts/write-diaries.md</code></span></li>
+    <li><span class="tag code">Code</span><strong>The page</strong>A controller hook owns the run; components draw the summary, chart, panel and cards. <span class="where"><code>lib/useCrashTest.ts</code>, <code>app/page.tsx</code>, <code>components/</code></span></li>
+  </ul>
+
+  <h2>One action, end to end: tapping “Bus and train fares rise 20%”</h2>
+  <ol class="flow" aria-label="What happens when you tap the fares preset">
+    <li><div><strong>You tap the chip.</strong> <span class="where"><code>components/PolicyInput.tsx</code>: the chip’s <code>onPreset(preset.id)</code></span></div></li>
+    <li><div><strong>A run starts with the hand-checked levers.</strong> No AI reads a preset. <span class="where"><code>lib/useCrashTest.ts</code>: <code>runPreset</code> → <code>startRun</code></span></div></li>
+    <li><div><strong>The engine runs for all 8 people</strong>, instantly in the browser. Uncle Raju: −$12 is 12% of his $100 spare money, past the 10% line, so he “feels it”. <span class="where"><code>lib/engine.ts</code>: <code>runTown</code> → <code>runResident</code> → <code>verdict</code></span></div></li>
+    <li class="seen"><div><strong>You see the spread.</strong> “2 feel it, 4 barely affected, 2 unaffected”, the chart, the panel, and every card in its place. <span class="where"><code>lib/format.ts</code>: <code>summaryLine</code>, <code>cardText</code>, <code>chartRows</code>, <code>spareBar</code>; drawn by <code>components/StatusLine.tsx</code>, <code>ChangeChart.tsx</code>, <code>ResidentCard.tsx</code></span></div></li>
+    <li class="ai"><div><strong>Diaries are requested.</strong> The server re-runs the engine (it never trusts the browser’s numbers) and sends Claude Sonnet 5.5 each card’s exact strings. <span class="where"><code>lib/useCrashTest.ts</code>: <code>requestDiaries</code> → <code>app/api/diaries/route.ts</code> → <code>lib/writeDiaries.ts</code>: <code>writeDiaries</code>, with <code>lib/diaryInput.ts</code>: <code>residentBlock</code></span></div></li>
+    <li class="seen"><div><strong>Each diary drops into its card</strong> as its line arrives; a newer run drops late lines, and after 20 seconds anything missing shows “Diary didn’t come through”. <span class="where"><code>components/DiaryNote.tsx</code></span></div></li>
+  </ol>
+  <p class="legend">Black edge: plain code. Yellow edge: calls the Anthropic API. Green edge: what you see. A <strong>typed</strong> policy adds one step before step 2: <code>runTyped</code> posts to <code>app/api/parse/route.ts</code>, which calls <code>readPolicy</code> (Claude Haiku 5.5) and returns levers; from there the path is the same.</p>
+
+  <h2>A three-stop reference route</h2>
+  <p>A route to read in your editor; it wasn’t toured together. Follow the fares example through these stops:</p>
+  <ol class="route">
+    <li><strong><code>lib/useCrashTest.ts</code>, search <code>function startRun</code>.</strong> Where a policy becomes a run: it cancels the previous diary request, runs the engine for all 8 people, and starts the new diary request. <code>runTyped</code> just above it is the typed-policy door into the same function.</li>
+    <li><strong><code>lib/engine.ts</code>, search <code>export function verdict</code>.</strong> The kernel. It works in “×12 cents”, so a one-off counts as value ÷ 12 with no fractions. It compares by cross-multiplying, so landing exactly on −1%, −5%, −10% or −30% keeps the milder verdict. The worse of the two lenses wins, and the spare-money lens applies only to losses.</li>
+    <li><strong><code>tests/presets.test.ts</code>, search <code>Uncle Raju feels it</code>.</strong> The PRD’s Expected Preset Results, written as tests: “−$12”, “0.9% of income”, “$12 = 12% of what’s left each month”. <code>npm test</code> proves the cards still say exactly that.</li>
+  </ol>
+
+  <h2>To change this, start here</h2>
+  <table>
+    <thead><tr><th scope="col">If you want to change…</th><th scope="col">Start in</th><th scope="col">Then check with</th></tr></thead>
+    <tbody>
+      <tr><td>A resident’s budget or everyday line</td><td><code>data/residents.ts</code></td><td><code>npm test</code> (preset tests show what moved)</td></tr>
+      <tr><td>A preset or its assumptions</td><td><code>data/presets/*.json</code></td><td><code>tests/presets.test.ts</code></td></tr>
+      <tr><td>The verdict lines (1%, 5%, 10%, 30%)</td><td><code>lib/engine.ts</code>: <code>verdict</code></td><td><code>tests/engine.test.ts</code>: “verdict lines”</td></tr>
+      <tr><td>Card or summary wording</td><td><code>lib/format.ts</code>: <code>cardText</code>, <code>summaryLine</code></td><td><code>tests/format.test.ts</code>, <code>tests/presets.test.ts</code></td></tr>
+      <tr><td>How the AI reads a policy</td><td><code>prompts/parse-policy.md</code></td><td><code>npm test</code> (prompt examples), then <code>npm run eval:parser</code></td></tr>
+      <tr><td>The diaries’ voice</td><td><code>prompts/write-diaries.md</code></td><td><code>npm run eval:diaries</code></td></tr>
+      <tr><td>Which models run</td><td><code>.env.local</code>: <code>PARSE_MODEL</code>, <code>DIARY_MODEL</code></td><td>both evals</td></tr>
+      <tr><td>Colours and stripes</td><td><code>app/globals.css</code> (<code>--hazard</code>, verdict colours)</td><td>the page, at phone and desktop widths</td></tr>
+    </tbody>
+  </table>
+
+  <h2>A practice to reuse</h2>
+  <div class="practice">
+    <p><strong>When an LLM eval fails, read the actual outputs before you touch the prompt.</strong></p>
+    <p>The first live eval run failed 1 of 10 parser cases and 4 of 8 diary runs. The outputs told a different story from the scores:</p>
+    <ul>
+      <li>The parser wrote <code>tagsAny: ["has_children"]</code> where the fixture expected <code>mustHaveChildren: true</code>. The engine selects the same parents either way.</li>
+      <li>The diaries quoted the policy’s own “$300” and “$3,000”, and one did correct arithmetic: Nurul’s spare money going from $500 to $900.</li>
+    </ul>
+    <p>None of these was a wrong number on screen. So the fixes went into the evals and the input, not the prompts. The parser check now tests <em>who is eligible</em> rather than <em>which field was used</em>. The diary check allows amounts from the policy text. And the diary writer now gets the engine’s “spare money after”, so it never does sums. The re-run passed 10/10 and 8/8.</p>
+    <p><strong>On your next project:</strong> test the behaviour that matters rather than its exact representation, and give the model computed facts instead of asking it to calculate. Then a failing eval points at a real problem. The same build used three layers of checks:</p>
+    <ul>
+      <li>the shape is guaranteed (structured output plus zod);</li>
+      <li>the prompts are tested offline (<code>tests/prompts.test.ts</code>);</li>
+      <li>behaviour is measured live across repeated runs (<code>evals/</code>).</li>
+    </ul>
+    <p>Evidence: <code>devpost/checklist.md</code> under “Revisions”, <code>evals/parser.eval.ts</code>, <code>evals/diaries.eval.ts</code>, and <code>lib/diaryInput.ts</code> (<code>residentBlock</code>).</p>
+  </div>
+
+  <h2>Run it again</h2>
+  <pre>npm install
+cp .env.example .env.local     # add your key to ANTHROPIC_API_KEY
+npm run dev                    # http://localhost:3000
+npm test                       # offline, no key
+npm run eval:parser            # live, about $0.01
+npm run eval:diaries           # live, about $0.11
+npm run build &amp;&amp; npm start     # production mode, for recording</pre>
+  <details>
+    <summary>Where the planning lives</summary>
+    <p><code>devpost/scope.md</code> (the kernel and the cuts), <code>devpost/prd.md</code> (behaviour and the Expected Preset Results), <code>devpost/spec.md</code> (stack, components, decisions) and <code>devpost/checklist.md</code> (the six build slices and every revision the build made to the plan).</p>
+  </details>
+
+  <footer>
+    <p>A snapshot of the code at commit <code>2b07b8e</code> (16 October 2026); the code can drift after this. To reopen it, open <code>devpost/app-map.html</code> in any browser, or run <code>open devpost/app-map.html</code> on a Mac. It needs no network.</p>
+  </footer>
+</main>
+</body>
+</html>
