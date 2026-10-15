@@ -18,7 +18,12 @@ export function StatusLine({ phase, results, residentCount, failedDiaries, onRet
 
   return (
     <section aria-live="polite" className="mt-12 border-t-2 border-ink pt-5">
-      {results === null || allUnaffected ? (
+      {phase === "reading" ? (
+        <p className={`flex items-center gap-3 ${headline}`}>
+          <span className="h-3 w-3 animate-pulse rounded-full bg-hazard ring-2 ring-ink motion-reduce:animate-none" aria-hidden />
+          Reading the policy
+        </p>
+      ) : results === null || allUnaffected ? (
         <p className={headline}>{results === null ? summaryBeforeRun(residentCount) : summaryLine(results)}</p>
       ) : (
         <p className={`flex flex-wrap items-center gap-x-1 gap-y-2 ${headline}`}>

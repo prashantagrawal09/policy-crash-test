@@ -40,6 +40,8 @@ export default function Home() {
         presets={PRESETS}
         onPreset={crash.runPreset}
         locked={crash.phase === "reading"}
+        message={crash.message}
+        onTryAgain={crash.runCurrent}
       />
 
       <StatusLine
@@ -64,6 +66,7 @@ export default function Home() {
             resident={resident}
             result={results?.find((result) => result.id === resident.id) ?? null}
             diary={crash.run ? (crash.diaries[resident.id] ?? null) : null}
+            waiting={crash.phase === "reading"}
           />
         ))}
       </section>

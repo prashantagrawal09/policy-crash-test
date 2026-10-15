@@ -23,11 +23,12 @@ interface Props {
   resident: Resident;
   result: ResidentResult | null; // null before any run
   diary: DiaryState | null; // null before any run
+  waiting: boolean; // a typed policy is being read: the card shimmers in place
 }
 
 // One resident's card, before and after a run (prd.md > Resident Cards): who they are, what the
 // policy does to their money, then how it feels. Cards never move; only contents and colour change.
-export function ResidentCard({ resident, result, diary }: Props) {
+export function ResidentCard({ resident, result, diary, waiting }: Props) {
   const Icon = ROLE_ICONS[resident.icon] ?? Laptop;
   const verdict = result?.verdict ?? null;
   const style = verdict ? VERDICT_STYLES[verdict] : null;
@@ -39,7 +40,7 @@ export function ResidentCard({ resident, result, diary }: Props) {
       aria-label={resident.name}
       className={`flex flex-col overflow-hidden rounded-lg border border-ink/15 transition-colors duration-300 motion-reduce:transition-none ${
         style?.tint ?? "bg-white"
-      }`}
+      } ${waiting ? "animate-pulse motion-reduce:animate-none" : ""}`}
     >
       <div className={`h-1.5 transition-colors duration-300 motion-reduce:transition-none ${style?.band ?? "bg-transparent"}`} aria-hidden />
 

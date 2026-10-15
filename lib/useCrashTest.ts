@@ -4,11 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { RESIDENTS } from "@/data/residents";
 import { runTown, type ResidentResult } from "@/lib/engine";
 import { getPreset } from "@/lib/presets";
-import { DiaryLineSchema, type DiaryLine, type Lever, type ParseResult } from "@/lib/schemas";
+import { DiaryLineSchema, ParseResultSchema, type DiaryLine, type Lever, type ParseResult } from "@/lib/schemas";
 
 // The browser-side run controller: owns the text box, the current run, its phase and its diaries.
 
-export type Phase = "idle" | "reading" | "numbers" | "writing" | "done";
+// "numbers" is never shown: the engine is instant (spec small call 10, no artificial delays).
+export type Phase = "idle" | "reading" | "writing" | "done";
 
 export interface CrashRun {
   runId: number;
@@ -21,6 +22,11 @@ export interface CrashRun {
 }
 
 export type DiaryState = { status: "pending" } | { status: "arrived"; line: DiaryLine } | { status: "failed" };
+
+// A message under the text box: the AI's not-a-policy reason, or the couldn't-read error.
+export type InputMessage = { kind: "not_policy"; text: string } | { kind: "error"; text: string };
+
+export const COULDNT_READ = "Couldn't read that one right now. Try again, or tap a preset.";
 
 const DIARY_TIMEOUT_MS = 20_000;
 
@@ -41,9 +47,13 @@ export function useCrashTest() {
   // The chip whose text is in the box, until that text is edited. Only then do the
   // hand-checked preset levers apply (small call 9: tracked by origin, not by matching).
   const [textPresetId, setTextPresetId] = useState<string | null>(null);
-  const [phase, setPhase] = useState<Phase>("idle");
+  // The current run's phase, kept apart from reading a typed policy: the old run's diaries
+  // can still be landing while a new policy is read, and a failed read leaves them alone.
+  const [runPhase, setRunPhase] = useState<"idle" | "writing" | "done">("idle");
+  const [reading, setReading] = useState(false);
   const [run, setRun] = useState<CrashRun | null>(null);
   const [diaries, setDiaries] = useState<Record<string, DiaryState>>({});
+  const [message, setMessage] = useState<InputMessage | null>(null);
   const runIdRef = useRef(0);
   const diaryRequest = useRef<AbortController | null>(null);
 
@@ -91,7 +101,7 @@ export function useCrashTest() {
             Object.entries(current).map(([id, state]) => [id, state.status === "pending" ? { status: "failed" } : state]),
           ),
         );
-        setPhase("done");
+        setRunPhase("done");
       }
       if (diaryRequest.current === controller) diaryRequest.current = null;
     }
@@ -113,7 +123,7 @@ export function useCrashTest() {
     const ids = RESIDENTS.map((r) => r.id);
     setRun(next);
     setDiaries(Object.fromEntries(ids.map((id) => [id, { status: "pending" }])));
-    setPhase("writing");
+    setRunPhase("writing");
     void requestDiaries(next, ids);
   }
 
@@ -127,26 +137,57 @@ export function useCrashTest() {
     if (!preset) return;
     setText(preset.chip);
     setTextPresetId(presetId);
+    setMessage(null);
     startRun({ kind: "preset", presetId }, preset.chip, preset.levers, preset.assumptions, null);
   }
 
+  // A typed policy is read by the AI first. If it isn't a policy, or can't be read,
+  // the message goes under the box and the town stays as it was.
+  async function runTyped(policyText: string) {
+    setMessage(null);
+    setReading(true);
+    try {
+      const response = await fetch("/api/parse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: policyText }),
+      });
+      const body = await response.json().catch(() => null);
+      const parsed = response.ok && body?.ok ? ParseResultSchema.safeParse(body.result) : null;
+      if (!parsed?.success) throw new Error("couldn't read");
+
+      const result = parsed.data;
+      if (!result.isPolicy) {
+        setMessage({ kind: "not_policy", text: result.rejectReason || "That doesn't look like a policy. Try a change to prices, fees or payments." });
+        return;
+      }
+      startRun({ kind: "typed" }, policyText, result.levers, result.assumptions, result.confidence);
+    } catch {
+      setMessage({ kind: "error", text: COULDNT_READ });
+    } finally {
+      setReading(false);
+    }
+  }
+
   function runCurrent() {
+    if (reading || !text.trim()) return;
     if (textPresetId) runPreset(textPresetId);
-    // Typed policies go to the parser (slice 4).
+    else void runTyped(text.trim());
   }
 
   // "Retry diaries" asks only for the ones that didn't come through; arrived diaries stay.
   function retryDiaries() {
-    if (!run || phase !== "done") return;
+    if (!run || reading || runPhase !== "done") return;
     const failed = Object.keys(diaries).filter((id) => diaries[id].status === "failed");
     if (failed.length === 0) return;
     setDiaries((current) => ({ ...current, ...Object.fromEntries(failed.map((id) => [id, { status: "pending" }])) }));
-    setPhase("writing");
+    setRunPhase("writing");
     void requestDiaries(run, failed);
   }
 
-  const canRun = text.trim().length > 0 && phase !== "reading" && textPresetId !== null;
+  const phase: Phase = reading ? "reading" : runPhase;
+  const canRun = text.trim().length > 0 && !reading;
   const failedDiaries = Object.values(diaries).filter((d) => d.status === "failed").length;
 
-  return { text, editText, runPreset, runCurrent, canRun, phase, run, diaries, failedDiaries, retryDiaries };
+  return { text, editText, runPreset, runCurrent, canRun, phase, run, diaries, failedDiaries, retryDiaries, message };
 }

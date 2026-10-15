@@ -151,7 +151,7 @@ PRD ref: `prd.md > Resident Cards`, `prd.md > Town Summary`; `prd.md` small call
 - **Input:** `{ text }`. Returns a 400 if the text is empty or longer than 500 characters.
 - **Call:** `PARSE_MODEL` through `client.messages.parse()`, with:
   - `prompts/parse-policy.md` as the system prompt and the text as the user message;
-  - `output_config: { format: zodOutputFormat(ParseResult), effort: "low" }` and `max_tokens: 4000`;
+  - `output_config: { format, effort: "low" }` and `max_tokens: 4000`, where `format` is a `json_schema` format built from zod's own JSON Schema for ParseResult (SDK 0.134's `zodOutputFormat` drops the enums), and its `parse()` returns null for a reply that fails zod;
   - no `temperature` (this model rejects it);
   - a 12-second timeout and 1 retry.
 - **Reply handling:**
@@ -322,6 +322,7 @@ Policy Crash Tester/              # repository root
 │   ├── format.ts                 # pure: dollars, percentages, card lines, summary
 │   ├── presets.ts                # loads and validates data/presets/*.json
 │   ├── diaryInput.ts             # builds each resident's block for the diary writer
+│   ├── readPolicy.ts             # the parse call, shared by the route and the parser eval (server only)
 │   ├── prompts.ts                # reads prompts/*.md (server only)
 │   ├── anthropic.ts              # SDK client, PARSE_MODEL, DIARY_MODEL (server only)
 │   └── useCrashTest.ts           # client run controller
@@ -364,7 +365,7 @@ The skill-pack files (`.agents/`, `.claude/`, `agent/`, `skills-lock.json`) and 
   client.messages.parse(
     { model: PARSE_MODEL, max_tokens: 4000, system: parsePrompt,
       messages: [{ role: "user", content: text }],
-      output_config: { format: zodOutputFormat(ParseResultSchema), effort: "low" } },
+      output_config: { format: parseResultFormat, effort: "low" } },  // zod's JSON Schema, enums kept
     { timeout: 12_000, maxRetries: 1 },
   )
   // read stop_reason first, then parsed_output (null if it couldn't be parsed)
@@ -388,7 +389,7 @@ The skill-pack files (`.agents/`, `.claude/`, `agent/`, `skills-lock.json`) and 
   - Check `stop_reason` for `"refusal"` before reading content. Haiku 5.5 has no server-side fallback.
 - **Errors**, checked most specific first: `RateLimitError`, then `APIConnectionError` (which includes timeouts), then `APIError`. All of them map to the PRD's friendly messages, and the details go to the server log.
 - **Cost** (first-party prices per million tokens): Haiku 5.5 is $0.10 in and $0.50 out; Sonnet 5.5 is $2 in and $10 out.
-  - Estimates: a typed-policy parse is about 1.5K tokens in and 0.5K out, roughly $0.0004. A diary run is about 2K in and 1.5K out, roughly $0.02. Measured in `5-build`: about 1.7–1.8K in and 0.9–1.0K out, $0.013 per full diary run.
+  - Estimates: a typed-policy parse is about 1.5K tokens in and 0.5K out, roughly $0.0004. Measured in `5-build`: about 2.2K in and 0.1K out, $0.0003 per parse. A diary run is about 2K in and 1.5K out, roughly $0.02. Measured in `5-build`: about 1.7–1.8K in and 0.9–1.0K out, $0.013 per full diary run.
   - So a crash test costs about 2 cents, presets included (they skip the parse). A hundred runs while building and recording is about $2.
   - The parser eval is about $0.01 and the diary eval about $0.16.
   - `5-build` measures the real cost of one run before running anything in bulk.
@@ -445,7 +446,7 @@ Downloaded at build time and served from the app, with no calls at runtime:
 
 ### Early build checks
 - **Scaffolding:** create-next-app 16.4.1 refuses a folder that holds files outside its allowlist; here that's `.agents`, `agent`, `devpost`, `prompts`, `Claude.md` and `skills-lock.json`. Scaffold into a temporary folder and move the files in, merging `.gitignore`. *Done in slice 1.*
-- **`zodOutputFormat`:** check that it accepts zod 4 and this lever schema (optional fields, enums). Fallback: a hand-written JSON Schema in `output_config.format`, with the reply still checked by zod.
+- **`zodOutputFormat`:** check that it accepts zod 4 and this lever schema (optional fields, enums). Fallback: a hand-written JSON Schema in `output_config.format`, with the reply still checked by zod. *Checked in slice 4: it accepts zod 4 but moves every `enum` into a description, so the fallback is in use: zod's own JSON Schema, enums kept, reply still checked by zod.*
 - **Refusal fallback:** check whether the SDK's types accept `fallbacks: "default"` (small call 11). If not, use a type cast or drop it. *Checked in slice 3: SDK 0.134 accepts it with no cast.*
 - **Heading font:** check that Archivo's width axis works through `next/font`. Fallback: Archivo Black. *Checked in slice 1: it works (`font-stretch: 62% 125%`); no fallback needed.*
 - **First diary speed:** measure time to first diary at effort `low`. If it's slow, switch the diary call to `thinking: { type: "between_tools" }`, which turns off extended thinking. *Measured in slice 3: first diary at 1.9–2.3 s, all 8 in 8.4–9.3 s; no switch needed.*

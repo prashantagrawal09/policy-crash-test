@@ -1,6 +1,7 @@
 "use client";
 
 import type { PresetFile } from "@/lib/schemas";
+import type { InputMessage } from "@/lib/useCrashTest";
 
 export const MAX_POLICY_CHARS = 500;
 
@@ -12,10 +13,12 @@ interface Props {
   presets: PresetFile[];
   onPreset: (presetId: string) => void;
   locked: boolean; // true only while a typed policy is being read
+  message: InputMessage | null;
+  onTryAgain: () => void;
 }
 
 // The big text box, the Run button and the 4 preset chips (prd.md > Policy Input and Presets).
-export function PolicyInput({ text, onTextChange, onRun, canRun, presets, onPreset, locked }: Props) {
+export function PolicyInput({ text, onTextChange, onRun, canRun, presets, onPreset, locked, message, onTryAgain }: Props) {
   const nearLimit = text.length >= MAX_POLICY_CHARS - 100;
 
   return (
@@ -45,6 +48,25 @@ export function PolicyInput({ text, onTextChange, onRun, canRun, presets, onPres
           placeholder="Paste a policy or headline, for example “Electricity bills cut 20%”"
           className="block w-full resize-none rounded-md border-2 border-ink bg-white px-4 py-3 text-lg leading-snug placeholder:text-ink/40 focus:outline-none focus-visible:ring-4 focus-visible:ring-hazard"
         />
+        {message?.kind === "not_policy" && (
+          <p role="status" className="mt-2 rounded-md border border-ink/20 bg-white px-3 py-2 text-[15px]">
+            <span className="mr-1 text-xs font-bold uppercase tracking-wider text-ink/50">Not a policy:</span>{" "}
+            {message.text}
+          </p>
+        )}
+        {message?.kind === "error" && (
+          <p role="alert" className="mt-2 flex flex-wrap items-center gap-3 rounded-md border border-hard/40 bg-white px-3 py-2 text-[15px]">
+            {message.text}
+            <button
+              type="button"
+              onClick={onTryAgain}
+              disabled={locked}
+              className="rounded-md border-2 border-ink px-2.5 py-0.5 text-sm font-semibold transition-colors hover:bg-hazard disabled:opacity-50"
+            >
+              Try again
+            </button>
+          </p>
+        )}
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
           <button
             type="submit"

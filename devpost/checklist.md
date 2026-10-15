@@ -39,7 +39,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: First, copy `.env.example` to `.env.local` and add your key yourself. Then tap "Bus and train fares rise 20%" and watch the diaries fill in; tap "Petrol prices rise 15%" while they're still arriving and check that no old diary lands on the new cards.
   Commit: `Stream resident diaries into the cards`
 
-- [ ] **4. Type your own policy**
+- [x] **4. Type your own policy**
   Becomes usable: Typing a policy and pressing "Run the crash test" sends it to Claude Haiku 5.5; the town reacts with numbers, chart and diaries, and the panel reads "How the AI read this policy" with plain-English levers, assumptions and a confidence tag. A non-policy shows the AI's reason under the box; an error shows "Couldn't read that one right now. Try again, or tap a preset." with Try again; either way the town stays as it was.
   Why now: It's demo step 3 and the last journey behaviour. It reuses the engine, panel and diaries already proven, so any trouble here is isolated to the parser.
   PRD ref: `prd.md > Policy Input and Presets`, `prd.md > How the Policy Was Read`, `prd.md > States and Boundaries` (couldn't read the policy, not a policy, a policy that changes nobody's budget)
@@ -96,3 +96,5 @@ Activity mode: not started
 - `@types/node` is `^22` instead of the template's `^20` — Vitest 5 requires `@types/node` 22 or newer as a peer; this machine runs Node 22.
 - The Vitest config is `vitest.config.mts` — as `.ts` it loads as CommonJS in this project and Vite warns; `spec.md > File Structure` updated.
 - `lib/prompts.ts` caches the prompts only in production and re-reads them on every call in development — so prompt edits apply without a restart while you iterate; `spec.md > Prompt and Client Setup` updated.
+- The parser sends zod's own JSON Schema (minus `$schema`) as its structured-output format instead of `zodOutputFormat` — SDK 0.134's `zodOutputFormat` moves every `enum` into a description, so the model wouldn't be held to the allowed targets, kinds, housing types and tags; the reply is still checked by zod (the spec's planned fallback). `spec.md > Parse Route` updated.
+- The parse call lives in a new `lib/readPolicy.ts`, shared by the route and the parser eval so the eval tests exactly what the app runs; `spec.md > File Structure` updated.
