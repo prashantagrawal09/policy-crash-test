@@ -70,3 +70,22 @@ body {
     animation: none;
   }
 }
+
+/* A small pop when a character's face changes; still for people who prefer reduced motion. */
+@keyframes face-pop {
+  from {
+    transform: scale(0.84);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@utility face-pop {
+  transform-origin: 50px 47px;
+  animation: face-pop 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}

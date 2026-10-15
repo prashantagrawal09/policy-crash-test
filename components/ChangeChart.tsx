@@ -1,6 +1,8 @@
 import type { ResidentResult, Verdict } from "@/lib/engine";
+import type { Expression } from "@/lib/expressions";
 import { chartRows, VERDICT_LABELS, type ChartRow } from "@/lib/format";
 import type { Resident } from "@/lib/schemas";
+import { ResidentAvatar } from "./ResidentAvatar";
 import { VERDICT_STYLES } from "./verdictStyles";
 
 // The longest bar reaches --max-bar from the zero line: half the row minus a fixed 4rem,
@@ -25,7 +27,7 @@ function segments(row: ChartRow): Segment[] {
 }
 
 // One bar per resident, in card order, from a zero line: losses left, gains right (prd.md > Monthly Change Chart).
-export function ChangeChart({ residents, results }: { residents: Resident[]; results: ResidentResult[] }) {
+export function ChangeChart({ residents, results, faces }: { residents: Resident[]; results: ResidentResult[]; faces: Record<string, Expression> }) {
   const rows = chartRows(results);
   const extents = rows.flatMap((row) => segments(row).flatMap((s) => [Math.abs(s.from), Math.abs(s.to)]));
   const scale = Math.max(1, ...extents);
@@ -50,8 +52,11 @@ export function ChangeChart({ residents, results }: { residents: Resident[]; res
           const labelStyle = net < 0 ? { right: at(-low, "6px") } : { left: at(high, "6px") };
 
           return (
-            <li key={row.id} className="grid grid-cols-[6.5rem_1fr] items-center gap-3 py-1 sm:grid-cols-[7.5rem_1fr]">
-              <span className="truncate text-sm font-semibold">{resident.shortName}</span>
+            <li key={row.id} className="grid grid-cols-[7.5rem_1fr] items-center gap-3 py-1 sm:grid-cols-[8.75rem_1fr]">
+              <span className="flex min-w-0 items-center gap-1.5">
+                <ResidentAvatar id={row.id} expression={faces[row.id] ?? "neutral"} size={26} className="shrink-0" />
+                <span className="truncate text-sm font-semibold">{resident.shortName}</span>
+              </span>
               <div className="relative h-7">
                 <div className="absolute inset-y-0 left-1/2 w-px bg-ink" aria-hidden />
                 {parts.map((s, i) => (
@@ -79,7 +84,7 @@ export function ChangeChart({ residents, results }: { residents: Resident[]; res
         })}
       </ul>
 
-      <div className="mt-2 grid grid-cols-[6.5rem_1fr] gap-3 text-xs text-ink/50 sm:grid-cols-[7.5rem_1fr]" aria-hidden>
+      <div className="mt-2 grid grid-cols-[7.5rem_1fr] gap-3 text-xs text-ink/50 sm:grid-cols-[8.75rem_1fr]" aria-hidden>
         <span />
         <div className="flex justify-between">
           <span>← loses money</span>

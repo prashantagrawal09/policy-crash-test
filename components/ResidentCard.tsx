@@ -1,35 +1,24 @@
-import { BookOpen, Car, Cross, HikingStick, KeyRound, Laptop, Soup, Truck, type LucideIcon } from "lucide-react";
 import { spareMoney, type ResidentResult } from "@/lib/engine";
 import { cardText, incomeText, money } from "@/lib/format";
 import type { Resident } from "@/lib/schemas";
+import type { Expression } from "@/lib/expressions";
 import type { DiaryState } from "@/lib/useCrashTest";
 import { DiaryNote } from "./DiaryNote";
+import { ResidentAvatar } from "./ResidentAvatar";
 import { SpareMoneyBar } from "./SpareMoneyBar";
 import { VERDICT_STYLES } from "./verdictStyles";
-
-// Role icons (prd.md small call 16).
-const ROLE_ICONS: Record<string, LucideIcon> = {
-  soup: Soup,
-  car: Car,
-  "book-open": BookOpen,
-  "key-round": KeyRound,
-  "hiking-stick": HikingStick,
-  cross: Cross,
-  truck: Truck,
-  laptop: Laptop,
-};
 
 interface Props {
   resident: Resident;
   result: ResidentResult | null; // null before any run
   diary: DiaryState | null; // null before any run
+  expression: Expression; // the character's face (lib/expressions.ts)
   waiting: boolean; // a typed policy is being read: the card shimmers in place
 }
 
 // One resident's card, before and after a run (prd.md > Resident Cards): who they are, what the
 // policy does to their money, then how it feels. Cards never move; only contents and colour change.
-export function ResidentCard({ resident, result, diary, waiting }: Props) {
-  const Icon = ROLE_ICONS[resident.icon] ?? Laptop;
+export function ResidentCard({ resident, result, diary, expression, waiting }: Props) {
   const verdict = result?.verdict ?? null;
   const style = verdict ? VERDICT_STYLES[verdict] : null;
   const text = result ? cardText(result) : null;
@@ -48,14 +37,7 @@ export function ResidentCard({ resident, result, diary, waiting }: Props) {
         {/* Unaffected cards keep the calm "before" look, slightly faded; their diary stays readable. */}
         <div className={`flex flex-col gap-4 transition-opacity duration-300 motion-reduce:transition-none ${verdict === "unaffected" ? "opacity-65" : ""}`}>
           <header className="flex items-start gap-3">
-            <div className="relative h-12 w-12 shrink-0">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-ink font-display text-[15px] font-black text-paper font-stretch-condensed">
-                {resident.initials}
-              </div>
-              <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-hazard">
-                <Icon className="h-3.5 w-3.5 text-ink" aria-hidden strokeWidth={2.5} />
-              </div>
-            </div>
+            <ResidentAvatar id={resident.id} expression={expression} size={64} ringClass={style?.ring} className="-my-1 shrink-0" />
             <div className="min-w-0 flex-1">
               <h3 className="font-display text-xl font-extrabold leading-tight font-stretch-condensed">{resident.name}</h3>
               <p className="text-sm text-ink/60">

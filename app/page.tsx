@@ -6,6 +6,7 @@ import { PolicyPanel } from "@/components/PolicyPanel";
 import { ResidentCard } from "@/components/ResidentCard";
 import { StatusLine } from "@/components/StatusLine";
 import { RESIDENTS } from "@/data/residents";
+import { expressionFor } from "@/lib/expressions";
 import { PRESETS } from "@/lib/presets";
 import { useCrashTest } from "@/lib/useCrashTest";
 
@@ -13,6 +14,15 @@ import { useCrashTest } from "@/lib/useCrashTest";
 export default function Home() {
   const crash = useCrashTest();
   const results = crash.run?.results ?? null;
+
+  // Each character's face: their diary's mood once it lands, otherwise their verdict's.
+  const faces = Object.fromEntries(
+    RESIDENTS.map((resident) => {
+      const diary = crash.run ? crash.diaries[resident.id] : undefined;
+      const verdict = results?.find((r) => r.id === resident.id)?.verdict ?? null;
+      return [resident.id, expressionFor(verdict, diary?.status === "arrived" ? diary.line.mood : null)];
+    }),
+  );
 
   return (
     <main className="mx-auto w-full max-w-[1200px] px-4 pb-28 sm:px-6">
@@ -54,7 +64,7 @@ export default function Home() {
 
       {crash.run && (
         <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-          <ChangeChart residents={RESIDENTS} results={crash.run.results} />
+          <ChangeChart residents={RESIDENTS} results={crash.run.results} faces={faces} />
           <PolicyPanel run={crash.run} />
         </section>
       )}
@@ -66,6 +76,7 @@ export default function Home() {
             resident={resident}
             result={results?.find((result) => result.id === resident.id) ?? null}
             diary={crash.run ? (crash.diaries[resident.id] ?? null) : null}
+            expression={faces[resident.id]}
             waiting={crash.phase === "reading"}
           />
         ))}
