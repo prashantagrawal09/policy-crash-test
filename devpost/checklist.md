@@ -59,7 +59,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Run `npm run eval:parser` yourself and read the table: which cases held across all 3 runs, and does anything make you want to change a prompt rule?
   Commit: `Add live parser and diary evals`
 
-- [ ] **6. Ready to record**
+- [x] **6. Ready to record**
   Becomes usable: The 90-second demo runs in production mode (`npm run build && npm start`): a soft shimmer while waiting, verdict colour flips that read on video (off for reduced motion), the layout stacking to one column on a phone with the disclaimer always visible, and a README covering setup, tests, evals and recording.
   Why now: Polish goes last, once every behaviour is proven; this is what the video and the public repository need.
   PRD ref: `prd.md > Screens and Layout`, `prd.md > Look and Feel`, `prd.md > States and Boundaries` (first visit, waiting), `prd.md > Disclaimer`

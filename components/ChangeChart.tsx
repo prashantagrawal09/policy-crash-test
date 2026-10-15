@@ -3,8 +3,8 @@ import { chartRows, VERDICT_LABELS, type ChartRow } from "@/lib/format";
 import type { Resident } from "@/lib/schemas";
 import { VERDICT_STYLES } from "./verdictStyles";
 
-// The longest bar takes --max-bar of the row on its side of the zero line (less on phones),
-// leaving room for its label.
+// The longest bar reaches --max-bar from the zero line: half the row minus a fixed 4rem,
+// so its amount label always fits beside it, at any width.
 const LEGEND_ORDER: Verdict[] = ["hard_hit", "feels_it", "barely_affected", "better_off"];
 
 interface Segment {
@@ -39,7 +39,7 @@ export function ChangeChart({ residents, results }: { residents: Resident[]; res
     <figure className="rounded-lg border border-ink/15 bg-white p-5">
       <figcaption className="font-display text-2xl font-black font-stretch-condensed">Monthly change, person by person</figcaption>
 
-      <ul className="mt-4 [--max-bar:30%] sm:[--max-bar:40%]">
+      <ul className="mt-4 [--max-bar:calc(50%-4rem)]">
         {rows.map((row) => {
           const resident = residents.find((r) => r.id === row.id)!;
           const parts = segments(row);

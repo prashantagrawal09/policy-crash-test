@@ -33,14 +33,14 @@ export function DiaryNote({ state }: { state: DiaryState }) {
 
   const { mood, reaction, diary } = state.line;
   return (
-    <figure className="diary-paper rounded-md px-4 pb-3 pt-2.5">
+    <figure className="diary-paper rounded-md px-4 pb-3 pt-2.5 [background-position:0_10px]">
       <figcaption className="flex items-start gap-2">
         <span className={`mt-[3px] shrink-0 rounded border px-1.5 py-px text-[11px] font-semibold uppercase tracking-wider ${MOOD_STYLES[mood]}`}>
           {mood}
         </span>
         <span className="font-diary text-[15px] font-semibold italic leading-6">{reaction}</span>
       </figcaption>
-      <blockquote className="mt-1 font-diary text-[15px] italic leading-6 text-ink/85">{diary}</blockquote>
+      <blockquote className="font-diary text-[15px] italic leading-6 text-ink/85">{diary}</blockquote>
     </figure>
   );
 }
