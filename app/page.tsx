@@ -42,7 +42,13 @@ export default function Home() {
         locked={crash.phase === "reading"}
       />
 
-      <StatusLine phase={crash.phase} results={results} residentCount={RESIDENTS.length} />
+      <StatusLine
+        phase={crash.phase}
+        results={results}
+        residentCount={RESIDENTS.length}
+        failedDiaries={crash.failedDiaries}
+        onRetryDiaries={crash.retryDiaries}
+      />
 
       {crash.run && (
         <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
@@ -57,6 +63,7 @@ export default function Home() {
             key={resident.id}
             resident={resident}
             result={results?.find((result) => result.id === resident.id) ?? null}
+            diary={crash.run ? (crash.diaries[resident.id] ?? null) : null}
           />
         ))}
       </section>

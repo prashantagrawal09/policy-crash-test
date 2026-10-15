@@ -29,7 +29,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Tap each of the 4 chips and look at the chart, the spare-money bars and the panel. Say what you'd change about the look before the diaries land on these cards.
   Commit: `Add change chart, spare-money bars and preset panel`
 
-- [ ] **3. Diaries stream into the cards**
+- [x] **3. Diaries stream into the cards**
   Becomes usable: After the numbers land, each card's diary spot shimmers, then fills with a mood tag, a short reaction and a few first-person sentences in Lora italic, one card at a time. Missing diaries show "Diary didn't come through" with one "Retry diaries" button, and a new run drops late diaries from the old one.
   Why now: The diary stream is the riskiest piece left (streaming, the 15-second target, cancelling a run), and it finishes demo steps 1 and 2 end to end. Presets already work, so diaries can be tested without the parser.
   PRD ref: `prd.md > Diaries`, `prd.md > The Core Journey` (steps 3, 5, 6), `prd.md > States and Boundaries` (numbers in with diaries pending, diaries fail, a new run while diaries arrive)
@@ -71,7 +71,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 2: all 4 presets with cards, bars, chart and panel; approve the 8 everyday lines and the look before diaries and the parser build on them
+- [x] Early usable behavior explored — after slice 2: all 4 presets with cards, bars, chart and panel; approve the 8 everyday lines and the look before diaries and the parser build on them. Learner: "Looks good to me. Keep the everyday lines as they are."
 - [ ] Final kick-the-tires exploration and feedback completed — after slice 6, in production mode
 
 ## Final Review
@@ -95,4 +95,4 @@ Activity mode: not started
 - Tailwind v4 is wired through `@tailwindcss/turbopack` in `next.config.ts`, with no `postcss.config.mjs` — create-next-app 16.4.1's template replaced the `@tailwindcss/postcss` setup the spec assumed; `spec.md > Stack` and `File Structure` updated.
 - `@types/node` is `^22` instead of the template's `^20` — Vitest 5 requires `@types/node` 22 or newer as a peer; this machine runs Node 22.
 - The Vitest config is `vitest.config.mts` — as `.ts` it loads as CommonJS in this project and Vite warns; `spec.md > File Structure` updated.
-
+- `lib/prompts.ts` caches the prompts only in production and re-reads them on every call in development — so prompt edits apply without a restart while you iterate; `spec.md > Prompt and Client Setup` updated.

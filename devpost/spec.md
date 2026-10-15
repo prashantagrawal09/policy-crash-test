@@ -180,7 +180,7 @@ PRD ref: `prd.md > How the Policy Was Read`; `prd.md > States and Boundaries` (c
 PRD ref: `prd.md > Diaries`, `prd.md > States and Boundaries`.
 
 ### Prompt and Client Setup
-- **`lib/prompts.ts`** (server only): reads `prompts/parse-policy.md` and `prompts/write-diaries.md` from disk once and caches them.
+- **`lib/prompts.ts`** (server only): reads `prompts/parse-policy.md` and `prompts/write-diaries.md` from disk. Cached in production; re-read on every call in development, so your prompt edits apply without a restart.
 - **`lib/anthropic.ts`** (server only): creates one SDK client, which takes its key from `ANTHROPIC_API_KEY`. It also reads `PARSE_MODEL` and `DIARY_MODEL`, falling back to the defaults above.
 
 The routes load your prompts through these, as you asked.
@@ -388,7 +388,7 @@ The skill-pack files (`.agents/`, `.claude/`, `agent/`, `skills-lock.json`) and 
   - Check `stop_reason` for `"refusal"` before reading content. Haiku 5.5 has no server-side fallback.
 - **Errors**, checked most specific first: `RateLimitError`, then `APIConnectionError` (which includes timeouts), then `APIError`. All of them map to the PRD's friendly messages, and the details go to the server log.
 - **Cost** (first-party prices per million tokens): Haiku 5.5 is $0.10 in and $0.50 out; Sonnet 5.5 is $2 in and $10 out.
-  - Estimates: a typed-policy parse is about 1.5K tokens in and 0.5K out, roughly $0.0004. A diary run is about 2K in and 1.5K out, roughly $0.02.
+  - Estimates: a typed-policy parse is about 1.5K tokens in and 0.5K out, roughly $0.0004. A diary run is about 2K in and 1.5K out, roughly $0.02. Measured in `5-build`: about 1.7–1.8K in and 0.9–1.0K out, $0.013 per full diary run.
   - So a crash test costs about 2 cents, presets included (they skip the parse). A hundred runs while building and recording is about $2.
   - The parser eval is about $0.01 and the diary eval about $0.16.
   - `5-build` measures the real cost of one run before running anything in bulk.
@@ -444,16 +444,16 @@ Downloaded at build time and served from the app, with no calls at runtime:
 **Evidence during the build:** `npm test` passing, then the `npm run eval:parser` and `npm run eval:diaries` tables, with the real cost measured on the first run.
 
 ### Early build checks
-- **Scaffolding:** create-next-app 16.4.1 refuses a folder that holds files outside its allowlist; here that's `.agents`, `agent`, `devpost`, `prompts`, `Claude.md` and `skills-lock.json`. Scaffold into a temporary folder and move the files in, merging `.gitignore`.
+- **Scaffolding:** create-next-app 16.4.1 refuses a folder that holds files outside its allowlist; here that's `.agents`, `agent`, `devpost`, `prompts`, `Claude.md` and `skills-lock.json`. Scaffold into a temporary folder and move the files in, merging `.gitignore`. *Done in slice 1.*
 - **`zodOutputFormat`:** check that it accepts zod 4 and this lever schema (optional fields, enums). Fallback: a hand-written JSON Schema in `output_config.format`, with the reply still checked by zod.
-- **Refusal fallback:** check whether the SDK's types accept `fallbacks: "default"` (small call 11). If not, use a type cast or drop it.
-- **Heading font:** check that Archivo's width axis works through `next/font`. Fallback: Archivo Black.
-- **First diary speed:** measure time to first diary at effort `low`. If it's slow, switch the diary call to `thinking: { type: "between_tools" }`, which turns off extended thinking.
-- **Abort signal:** check that cancelling a run in the browser stops the server's model call.
-- **TypeScript:** check that the TypeScript version create-next-app installs passes `next build` cleanly.
+- **Refusal fallback:** check whether the SDK's types accept `fallbacks: "default"` (small call 11). If not, use a type cast or drop it. *Checked in slice 3: SDK 0.134 accepts it with no cast.*
+- **Heading font:** check that Archivo's width axis works through `next/font`. Fallback: Archivo Black. *Checked in slice 1: it works (`font-stretch: 62% 125%`); no fallback needed.*
+- **First diary speed:** measure time to first diary at effort `low`. If it's slow, switch the diary call to `thinking: { type: "between_tools" }`, which turns off extended thinking. *Measured in slice 3: first diary at 1.9–2.3 s, all 8 in 8.4–9.3 s; no switch needed.*
+- **Abort signal:** check that cancelling a run in the browser stops the server's model call. *Checked in slice 3: it does.*
+- **TypeScript:** check that the TypeScript version create-next-app installs passes `next build` cleanly. *Checked in slice 1: TypeScript 5.9 builds cleanly.*
 
 ### Carried over from the PRD
-- **The 8 everyday-life lines:** drafted during the build, for your approval. Doesn't block the build.
+- **The 8 everyday-life lines:** drafted during the build, for your approval. *Approved at the early checkpoint (`data/residents.ts`).*
 - **Which typed policy to use in the video:** rehearse it before recording (`6-ship`).
 
 ## Agent's Small Technical Calls (veto any)

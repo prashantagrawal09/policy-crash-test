@@ -181,7 +181,7 @@ Computed from the rules above, using the same check that shaped the demo.
 - **Taking political sides:** diaries talk about everyday life and money, not parties or public figures.
 
 ## Open Questions
-- **The 8 everyday-life lines:** drafted from the brief during the build, for the learner's approval. Doesn't block `4-spec`.
+- **The 8 everyday-life lines:** drafted from the brief during the build, for the learner's approval. *Resolved: approved at the `5-build` early checkpoint.*
 - **Which custom policy to type in the video:** pick and rehearse it before recording (`6-ship`). Doesn't block `4-spec`.
 
 ## Agent's Small Calls (veto any)
