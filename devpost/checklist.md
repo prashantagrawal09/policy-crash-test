@@ -5,7 +5,7 @@ status: approved
 
 # Build Checklist
 
-Build mode: not chosen yet (asked at the gut check)
+Build mode: fast (chosen after slice 1: "let's build further"; can switch any time)
 
 ## Slices
 
@@ -19,7 +19,7 @@ Build mode: not chosen yet (asked at the gut check)
   Learner check: Run `npm run dev`, open http://localhost:3000, tap "Bus and train fares rise 20%" and then "Petrol prices rise 15%", and watch Chloe and Uncle Raju trade places with Faizal and Marcus. Read the 8 everyday lines and say which you'd change.
   Commit: `Add town, engine and presets with instant preset runs`
 
-- [ ] **2. See the spread at a glance**
+- [x] **2. See the spread at a glance**
   Becomes usable: After a preset runs, the chart shows each person's monthly change from a zero line in verdict colours (striped one-offs, $0 for Unaffected); each card's spare-money bar shows the bite, with the 10% tick and the hazard spill below zero; and the panel explains "How this preset is set up" with the Hand-checked tag.
   Why now: It completes the lab-report half of the demo with no AI involved, so the look can be judged and adjusted at the early checkpoint before diaries and the parser build on the same layout.
   PRD ref: `prd.md > Monthly Change Chart`, `prd.md > Resident Cards` (spare-money bar, below zero, one-offs, Unaffected), `prd.md > How the Policy Was Read` (presets), `prd.md > Screens and Layout`

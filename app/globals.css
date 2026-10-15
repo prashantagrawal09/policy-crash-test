@@ -36,7 +36,11 @@ body {
   background-image: repeating-linear-gradient(-45deg, var(--hazard) 0 8px, var(--ink) 8px 16px);
 }
 
-/* One-off payments: green and white stripes. */
+/* One-off payments: green and white stripes (red and white for a one-off charge). */
 @utility oneoff-stripes {
-  background-image: repeating-linear-gradient(-45deg, var(--better) 0 4px, #ffffff 4px 8px);
+  background-image: repeating-linear-gradient(-45deg, var(--stripe-color, var(--better)) 0 4px, #ffffff 4px 8px);
+}
+
+@utility oneoff-stripes-loss {
+  --stripe-color: var(--hard);
 }

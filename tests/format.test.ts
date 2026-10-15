@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { RESIDENTS } from "@/data/residents";
 import { runResident, runTown } from "@/lib/engine";
-import { cardText, money, percent, signedMoney, summaryBeforeRun, summaryLine } from "@/lib/format";
+import { cardText, leverText, money, percent, signedMoney, spareBar, summaryBeforeRun, summaryLine } from "@/lib/format";
 import { PRESETS } from "@/lib/presets";
 import { lever, loss, person, resident } from "./helpers";
 
@@ -88,5 +88,35 @@ describe("summary line", () => {
   it("uses the singular for one person", () => {
     const results = [runResident(person(1000, 500), loss(20)), runResident(person(1000, 500), [])];
     expect(summaryLine(results)).toBe("1 feels it, 1 unaffected");
+  });
+});
+
+describe("levers in plain English", () => {
+  it("say what changes, by how much, and for whom", () => {
+    const hdb = lever("fixed_monthly_change", "utilities", -50, { housingTypes: ["hdb_2_room", "hdb_3_room", "hdb_4_room"] });
+    expect(leverText(hdb)).toBe(
+      "Utility bills go down $50 a month, for people living in HDB 2-room flats, HDB 3-room flats or HDB 4-room flats",
+    );
+    expect(leverText(lever("percent_change", "public_transport", -30, { minAge: 60, tagsAny: ["senior", "retiree"] }))).toBe(
+      "Public transport fares go down 30%, for people aged 60 and over, who are seniors or retirees",
+    );
+    expect(leverText(lever("percent_change", "income", 3))).toBe("Monthly income goes up 3%, for everyone");
+    expect(leverText(lever("percent_change", "all_taxable_spending", 1))).toBe(
+      "Prices of taxable goods and services go up 1%, for everyone",
+    );
+    expect(leverText(lever("one_off_payment", "utilities", -100, { minMonthlyIncome: 2000, maxMonthlyIncome: 5000 }))).toBe(
+      "A one-off rebate of $100 on utility bills, for people earning $2,000 to $5,000 a month",
+    );
+  });
+});
+
+describe("spare-money bar", () => {
+  it("is full, unshaded and ticked before a run", () => {
+    expect(spareBar(null)).toEqual({ keep: 100, solid: 0, striped: 0, tone: "none", spill: 0, tick: true });
+  });
+
+  it("caps the below-zero spill", () => {
+    expect(spareBar(runResident(person(1000, 100), loss(110))).spill).toBeCloseTo(10);
+    expect(spareBar(runResident(person(1000, 100), loss(900))).spill).toBe(25);
   });
 });

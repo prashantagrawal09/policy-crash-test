@@ -1,4 +1,5 @@
 import type { ResidentResult, Verdict } from "@/lib/engine";
+import type { Eligibility, HousingType, Lever, Tag } from "@/lib/schemas";
 
 // Pure display formatting. prd.md > Expected Preset Results is its test.
 
@@ -154,4 +155,170 @@ export function summaryLine(results: ResidentResult[]): string {
   return summaryParts(results)
     .map((part) => part.text)
     .join(", ");
+}
+
+// ---- Monthly change chart ----
+
+export interface ChartRow {
+  id: string;
+  verdict: Verdict;
+  monthly: number; // dollars a month: the solid part
+  oneOffShare: number; // dollars a month: a one-off ÷ 12, the striped part
+  label: string; // the amount next to the bar, matching the card's number
+}
+
+export function chartRows(results: ResidentResult[]): ChartRow[] {
+  return results.map((result) => {
+    const oneOffShare = result.cents.oneOff / 1200;
+    let label: string;
+    if (result.verdict === "unaffected") label = "$0";
+    else if (result.cents.monthly === 0) label = signedMoney(oneOffShare);
+    else if (result.cents.oneOff === 0) label = signedMoney(result.monthlyChange);
+    else label = `${signedMoney(result.monthlyChange)}, ${signedMoney(oneOffShare)} one-off`;
+    return { id: result.id, verdict: result.verdict, monthly: result.monthlyChange, oneOffShare, label };
+  });
+}
+
+// ---- Spare-money bar ----
+
+// How far a below-zero spill may run past the bar's end, as % of the bar's length.
+export const SPILL_MAX = 25;
+
+export interface SpareBar {
+  // Widths are % of the bar's length: the spare money before, or after for a gain.
+  keep: number; // spare money the policy leaves alone
+  solid: number; // monthly part eaten (loss) or added (gain)
+  striped: number; // one-off monthly share eaten or added
+  tone: "none" | "loss" | "gain";
+  spill: number; // below zero: hazard zone past the end (capped at SPILL_MAX)
+  tick: boolean; // the faint 10% "feels it" tick, shown when the bar is the spare money before
+}
+
+export function spareBar(result: ResidentResult | null): SpareBar {
+  const full: SpareBar = { keep: 100, solid: 0, striped: 0, tone: "none", spill: 0, tick: true };
+  if (!result || result.verdict === "unaffected") return full;
+
+  const { n, spare } = exact(result);
+  const monthly = 12 * result.cents.monthly;
+  const oneOff = result.cents.oneOff;
+  if (n === 0 || spare <= 0) return full;
+
+  // Monthly and one-off parts show separately only when they point the same way.
+  const sameWay = monthly === 0 || oneOff === 0 || Math.sign(monthly) === Math.sign(oneOff);
+  const solidPart = sameWay ? Math.abs(monthly) : Math.abs(n);
+  const stripedPart = sameWay ? Math.abs(oneOff) : 0;
+
+  if (n < 0) {
+    const eaten = -n;
+    if (eaten >= spare) {
+      // Fills fully red, then spills into the hazard zone past its end.
+      return {
+        keep: 0,
+        solid: (solidPart / eaten) * 100,
+        striped: (stripedPart / eaten) * 100,
+        tone: "loss",
+        spill: Math.min(SPILL_MAX, ((eaten - spare) / spare) * 100),
+        tick: true,
+      };
+    }
+    return {
+      keep: 100 - (eaten / spare) * 100,
+      solid: (solidPart / spare) * 100,
+      striped: (stripedPart / spare) * 100,
+      tone: "loss",
+      spill: 0,
+      tick: true,
+    };
+  }
+
+  // A gain: the bar becomes the spare money after, with the added part at the end.
+  const after = spare + n;
+  return {
+    keep: (spare / after) * 100,
+    solid: (solidPart / after) * 100,
+    striped: (stripedPart / after) * 100,
+    tone: "gain",
+    spill: 0,
+    tick: false,
+  };
+}
+
+// ---- Levers in plain English ----
+
+const TARGET_LABELS: Record<Exclude<Lever["target"], "income">, string> = {
+  housing: "Housing costs",
+  food: "Food prices",
+  public_transport: "Public transport fares",
+  private_transport: "Private transport costs",
+  utilities: "Utility bills",
+  healthcare: "Healthcare costs",
+  childcare: "Childcare fees",
+  education: "Education costs",
+  other: "Other costs",
+  all_taxable_spending: "Prices of taxable goods and services",
+};
+
+const HOUSING_LABELS: Record<HousingType, string> = {
+  hdb_2_room: "HDB 2-room flats",
+  hdb_3_room: "HDB 3-room flats",
+  hdb_4_room: "HDB 4-room flats",
+  condo: "condos",
+  renting: "rented homes",
+  with_parents: "their parents' homes",
+};
+
+const TAG_LABELS: Record<Tag, string> = {
+  student: "students",
+  senior: "seniors",
+  retiree: "retirees",
+  gig_worker: "gig workers",
+  business_owner: "business owners",
+  healthcare_worker: "healthcare workers",
+  single_parent: "single parents",
+  renter: "renters",
+  car_user: "car users",
+  has_children: "parents",
+};
+
+// "A", "A or B", "A, B or C"
+function orList(items: string[]): string {
+  return items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} or ${items[items.length - 1]}`;
+}
+
+export function forWhom(rules: Eligibility): string {
+  const parts: string[] = [];
+  const { minAge, maxAge, minMonthlyIncome: minIncome, maxMonthlyIncome: maxIncome } = rules;
+
+  if (minAge !== undefined && maxAge !== undefined) parts.push(`aged ${minAge} to ${maxAge}`);
+  else if (minAge !== undefined) parts.push(`aged ${minAge} and over`);
+  else if (maxAge !== undefined) parts.push(`aged ${maxAge} and under`);
+
+  if (minIncome !== undefined && maxIncome !== undefined) {
+    parts.push(`earning ${money(minIncome)} to ${money(maxIncome)} a month`);
+  } else if (maxIncome !== undefined) parts.push(`earning up to ${money(maxIncome)} a month`);
+  else if (minIncome !== undefined) parts.push(`earning at least ${money(minIncome)} a month`);
+
+  if (rules.housingTypes?.length) parts.push(`living in ${orList(rules.housingTypes.map((h) => HOUSING_LABELS[h]))}`);
+  if (rules.tagsAny?.length) parts.push(`who are ${orList(rules.tagsAny.map((t) => TAG_LABELS[t]))}`);
+
+  if (parts.length === 0) return rules.mustHaveChildren ? "parents" : "everyone";
+  return `${rules.mustHaveChildren ? "parents" : "people"} ${parts.join(", ")}`;
+}
+
+// What changes, by how much, for whom: built from the lever's own fields, so the panel
+// shows exactly what the engine applies (not the AI's free-text description).
+export function leverText(lever: Lever): string {
+  const { kind, target, value } = lever;
+  const amount = Math.abs(value);
+  const direction = value >= 0 ? "up" : "down";
+  let change: string;
+
+  if (kind === "one_off_payment") {
+    if (target === "income") change = `A one-off ${value >= 0 ? "payment" : "charge"} of ${money(amount)}`;
+    else change = `A one-off ${value <= 0 ? "rebate" : "charge"} of ${money(amount)} on ${TARGET_LABELS[target].toLowerCase()}`;
+  } else {
+    const by = kind === "percent_change" ? `${amount}%` : `${money(amount)} a month`;
+    change = target === "income" ? `Monthly income goes ${direction} ${by}` : `${TARGET_LABELS[target]} go ${direction} ${by}`;
+  }
+  return `${change}, for ${forWhom(lever.eligibility)}`;
 }

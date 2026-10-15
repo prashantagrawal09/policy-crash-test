@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { RESIDENTS } from "@/data/residents";
 import { runTown } from "@/lib/engine";
-import { cardText, summaryLine } from "@/lib/format";
+import { cardText, chartRows, leverText, SPILL_MAX, spareBar, summaryLine } from "@/lib/format";
 import { PRESETS, getPreset } from "@/lib/presets";
 import { PresetFileSchema } from "@/lib/schemas";
 
@@ -167,4 +167,63 @@ describe("Childcare fees cut by half for working parents", () => {
     }));
 
   it("Marcus (teenagers, no childcare) is unaffected", () => expect(card("marcus")).toMatchObject(UNAFFECTED));
+});
+
+describe("chart, spare-money bars and panel for the presets", () => {
+  const rowsFor = (presetId: string) => chartRows(runTown(RESIDENTS, getPreset(presetId)!.levers));
+  const barFor = (presetId: string, id: string) =>
+    spareBar(runTown(RESIDENTS, getPreset(presetId)!.levers).find((r) => r.id === id)!);
+
+  it("every chart amount matches its card's number", () => {
+    for (const preset of PRESETS) {
+      const results = runTown(RESIDENTS, preset.levers);
+      const rows = chartRows(results);
+      results.forEach((result, i) => {
+        const card = cardText(result);
+        if (result.verdict === "unaffected") expect(rows[i].label).toBe("$0");
+        else if (card.bigPerMonth) expect(rows[i].label).toBe(card.bigNumber);
+        else expect(card.monthlyEquivalent).toContain(rows[i].label.replace("+", ""));
+      });
+    }
+  });
+
+  it("the one-off preset shows striped +$25 bars for Chloe and Uncle Raju, and $0 for everyone else", () => {
+    const rows = rowsFor("one-off-300");
+    expect(rows.filter((r) => r.label !== "$0").map((r) => [r.id, r.label, r.monthly, r.oneOffShare])).toEqual([
+      ["chloe", "+$25", 0, 25],
+      ["raju", "+$25", 0, 25],
+    ]);
+  });
+
+  it("Raju's fare bite crosses the 10% tick and Nurul's stops short", () => {
+    expect(barFor("fares-20", "raju")).toMatchObject({ tone: "loss", keep: 88, solid: 12, striped: 0, tick: true });
+    expect(barFor("fares-20", "nurul")).toMatchObject({ tone: "loss", keep: 92, solid: 8, striped: 0, tick: true });
+  });
+
+  it("Faizal's petrol bar fills red and spills into the hazard zone", () => {
+    expect(barFor("petrol-15", "faizal")).toMatchObject({ tone: "loss", keep: 0, solid: 100, spill: SPILL_MAX });
+  });
+
+  it("gains extend the bar to the spare money after, with the added part shaded", () => {
+    const nurul = barFor("childcare-half", "nurul"); // $500 -> $900
+    expect(nurul.tone).toBe("gain");
+    expect(nurul.keep).toBeCloseTo((500 / 900) * 100);
+    expect(nurul.solid).toBeCloseTo((400 / 900) * 100);
+    const chloe = barFor("one-off-300", "chloe"); // $110 + $25 one-off share, striped
+    expect(chloe).toMatchObject({ tone: "gain", solid: 0 });
+    expect(chloe.striped).toBeCloseTo((25 / 135) * 100);
+  });
+
+  it("Unaffected residents keep a full, unshaded bar", () => {
+    expect(barFor("fares-20", "faizal")).toEqual({ keep: 100, solid: 0, striped: 0, tone: "none", spill: 0, tick: true });
+  });
+
+  it("the panel describes each preset's levers in plain English", () => {
+    expect(PRESETS.map((p) => p.levers.map(leverText))).toEqual([
+      ["Public transport fares go up 20%, for everyone"],
+      ["A one-off payment of $300, for people aged 21 and over, earning up to $3,000 a month"],
+      ["Private transport costs go up 15%, for everyone"],
+      ["Childcare fees go down 50%, for parents"],
+    ]);
+  });
 });

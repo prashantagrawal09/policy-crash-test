@@ -2,6 +2,7 @@ import { BookOpen, Car, Cross, HikingStick, KeyRound, Laptop, Soup, Truck, type 
 import { spareMoney, type ResidentResult } from "@/lib/engine";
 import { cardText, incomeText, money } from "@/lib/format";
 import type { Resident } from "@/lib/schemas";
+import { SpareMoneyBar } from "./SpareMoneyBar";
 import { VERDICT_STYLES } from "./verdictStyles";
 
 // Role icons (prd.md small call 16).
@@ -89,6 +90,8 @@ export function ResidentCard({ resident, result }: Props) {
             <p className="mt-0.5 text-sm text-ink/60">{incomeText(resident.income)}</p>
           </div>
         )}
+
+        <SpareMoneyBar result={result} />
 
         <p className="mt-auto text-sm leading-snug text-ink/70">{resident.everydayLine}</p>
       </div>

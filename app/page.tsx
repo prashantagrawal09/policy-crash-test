@@ -1,13 +1,15 @@
 "use client";
 
+import { ChangeChart } from "@/components/ChangeChart";
 import { PolicyInput } from "@/components/PolicyInput";
+import { PolicyPanel } from "@/components/PolicyPanel";
 import { ResidentCard } from "@/components/ResidentCard";
 import { StatusLine } from "@/components/StatusLine";
 import { RESIDENTS } from "@/data/residents";
 import { PRESETS } from "@/lib/presets";
 import { useCrashTest } from "@/lib/useCrashTest";
 
-// The one page, in PRD order: header, policy input, status and summary, residents.
+// The one page, in PRD order: header, policy input, status and summary, chart and panel, residents.
 export default function Home() {
   const crash = useCrashTest();
   const results = crash.run?.results ?? null;
@@ -41,6 +43,13 @@ export default function Home() {
       />
 
       <StatusLine phase={crash.phase} results={results} residentCount={RESIDENTS.length} />
+
+      {crash.run && (
+        <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+          <ChangeChart residents={RESIDENTS} results={crash.run.results} />
+          <PolicyPanel run={crash.run} />
+        </section>
+      )}
 
       <section aria-label="Residents" className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {RESIDENTS.map((resident) => (
