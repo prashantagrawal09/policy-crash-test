@@ -1,8 +1,9 @@
 "use client";
 
 import { AverageStrip } from "@/components/AverageStrip";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChangeChart } from "@/components/ChangeChart";
+import { GuidedIntro, introSeen, markIntroSeen } from "@/components/GuidedIntro";
 import { MoveIn } from "@/components/MoveIn";
 import { PolicyInput } from "@/components/PolicyInput";
 import { PolicyPanel } from "@/components/PolicyPanel";
@@ -36,11 +37,25 @@ function showCard(residentId: string) {
   window.setTimeout(() => card.classList.remove("card-flash"), 1700);
 }
 
-// The one page, in PRD order: header, policy input, moving in, status and summary, average vs. the people, town map, town chatter, chart and panel, residents.
+// The one page, in PRD order: the guided intro (first visit), header, policy input, moving in, status and summary, average vs. the people, town map, town chatter, chart and panel, residents.
 export default function Home() {
   const crash = useCrashTest();
   const town = crash.town; // the 8 residents, and you if you've moved in
   const [moveInOpen, setMoveInOpen] = useState(false);
+  // The guided intro plays on a first visit (known only in the browser) and can be replayed.
+  const [introOpen, setIntroOpen] = useState(false);
+  useEffect(() => {
+    if (!introSeen()) setIntroOpen(true);
+  }, []);
+  function closeIntro() {
+    markIntroSeen();
+    setIntroOpen(false);
+    window.scrollTo({ top: 0 });
+  }
+  function replayIntro() {
+    setIntroOpen(true);
+    window.scrollTo({ top: 0 });
+  }
   // The map's "Move in" sign opens the form and brings it into view.
   function openMoveIn() {
     setMoveInOpen(true);
@@ -69,12 +84,31 @@ export default function Home() {
 
   return (
     <main className="mx-auto w-full max-w-[1200px] px-4 pb-28 sm:px-6">
+      {introOpen && (
+        <GuidedIntro
+          onDone={closeIntro}
+          onPick={(presetId) => {
+            closeIntro();
+            crash.runPreset(presetId);
+          }}
+          onMoveIn={() => {
+            closeIntro();
+            openMoveIn();
+          }}
+        />
+      )}
+
       <header className="pt-10">
         <div className="flex items-center gap-3">
           <span className="hazard-stripes inline-block h-3 w-14 rounded-sm" aria-hidden />
           <span className="text-xs font-semibold uppercase tracking-[0.2em] text-ink/55">
             Crash test lab · Singapore
           </span>
+          {!introOpen && (
+            <button type="button" onClick={replayIntro} className="ml-auto text-xs font-semibold text-ink/55 underline underline-offset-2 hover:text-ink">
+              Replay intro
+            </button>
+          )}
         </div>
         <h1 className="mt-3 font-display text-5xl font-black uppercase leading-[0.95] font-stretch-condensed sm:text-7xl">
           Policy Crash Test

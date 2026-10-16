@@ -149,7 +149,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Move in as yourself and run the four presets.
   Commit: `Let visitors move into town`
 
-- [ ] **15. Guided intro**
+- [x] **15. Guided intro**
   Becomes usable: A first-visit scroll story: meet the town, averages hide people, watch a fare rise land, Raju vs. Nurul, your turn. It can be skipped and replayed, and it makes no AI calls.
   Why now: It narrates everything above, so it comes last.
   PRD ref: `prd.md > Guided Intro`
