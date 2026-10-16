@@ -26,6 +26,8 @@ export function ResidentCard({ resident, result, diary, expression, waiting }: P
 
   return (
     <article
+      id={`card-${resident.id}`}
+      tabIndex={-1}
       aria-label={resident.name}
       className={`flex flex-col overflow-hidden rounded-lg border border-ink/15 transition-colors duration-300 motion-reduce:transition-none ${
         style?.tint ?? "bg-white"

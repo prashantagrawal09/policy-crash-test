@@ -89,3 +89,62 @@ body {
     animation: none;
   }
 }
+
+/* Town map motion (prd.md > Town Map); all still for people who prefer reduced motion. */
+@keyframes map-lit {
+  0%, 100% { fill-opacity: 0.22; }
+  50% { fill-opacity: 0.5; }
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes coin-drop {
+  0% { opacity: 0; transform: translateY(-26px) rotateY(0deg); }
+  60% { opacity: 1; transform: translateY(2px) rotateY(180deg); }
+  100% { opacity: 1; transform: translateY(0) rotateY(360deg); }
+}
+
+@keyframes impact-ping {
+  0% { opacity: 0.55; transform: scale(1); }
+  100% { opacity: 0; transform: scale(2.1); }
+}
+
+@keyframes card-flash {
+  0%, 60% { box-shadow: 0 0 0 4px var(--hazard); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+@utility map-lit {
+  animation: map-lit 1.8s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}
+
+@utility tag-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pop-in 320ms ease-out both;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}
+
+@utility bubble-pop {
+  animation: pop-in 260ms ease-out both;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}
+
+@utility coin-drop {
+  animation: coin-drop 700ms ease-out both;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}
+
+@utility impact-ping {
+  animation: impact-ping 900ms ease-out 2 both;
+  @media (prefers-reduced-motion: reduce) { animation: none; opacity: 0; }
+}
+
+@utility card-flash {
+  animation: card-flash 1.6s ease-out;
+  @media (prefers-reduced-motion: reduce) { animation: none; outline: 3px solid var(--hazard); }
+}

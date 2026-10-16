@@ -79,7 +79,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Tap fares, then petrol, and watch the faces change. Say whether each character reads as who they are.
   Commit: `Draw the residents as characters whose faces react`
 
-- [ ] **8. The town reacts on a map**
+- [x] **8. The town reacts on a map**
   Becomes usable: An illustrated neighbourhood sits between the summary and the chart, with every resident's pin at home. When a policy runs, the places it touches light up: fares the MRT station and bus stop, petrol the petrol station, childcare the childcare centre, and typed policies by their lever targets. Pins flip to their verdict colours with an impact pulse, coins drop over whoever gets a one-off, reactions pop up as diaries land, and selecting a pin brings that card into view.
   Why now: It's the hero of the upgrade and uses the characters from slice 7. It reads the same engine output, so no numbers change.
   PRD ref: `prd.md > Town Map`, `prd.md > Screens and Layout`, `prd.md > The Core Journey` (steps 4–5)

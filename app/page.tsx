@@ -5,12 +5,27 @@ import { PolicyInput } from "@/components/PolicyInput";
 import { PolicyPanel } from "@/components/PolicyPanel";
 import { ResidentCard } from "@/components/ResidentCard";
 import { StatusLine } from "@/components/StatusLine";
+import { TownMap } from "@/components/TownMap";
 import { RESIDENTS } from "@/data/residents";
 import { expressionFor } from "@/lib/expressions";
 import { PRESETS } from "@/lib/presets";
 import { useCrashTest } from "@/lib/useCrashTest";
 
-// The one page, in PRD order: header, policy input, status and summary, chart and panel, residents.
+// Selecting a pin on the map brings that resident's card into view and flashes it.
+function showCard(residentId: string) {
+  const card = document.getElementById(`card-${residentId}`);
+  if (!card) return;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const top = card.getBoundingClientRect().top + window.scrollY - 24;
+  window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
+  card.focus({ preventScroll: true });
+  card.classList.remove("card-flash");
+  void card.offsetWidth; // restart the flash if it's already showing
+  card.classList.add("card-flash");
+  window.setTimeout(() => card.classList.remove("card-flash"), 1700);
+}
+
+// The one page, in PRD order: header, policy input, status and summary, town map, chart and panel, residents.
 export default function Home() {
   const crash = useCrashTest();
   const results = crash.run?.results ?? null;
@@ -60,6 +75,16 @@ export default function Home() {
         residentCount={RESIDENTS.length}
         failedDiaries={crash.failedDiaries}
         onRetryDiaries={crash.retryDiaries}
+      />
+
+      <TownMap
+        residents={RESIDENTS}
+        results={results}
+        levers={crash.run?.levers ?? null}
+        runId={crash.run?.runId ?? null}
+        diaries={crash.run ? crash.diaries : {}}
+        faces={faces}
+        onSelect={showCard}
       />
 
       {crash.run && (
