@@ -99,7 +99,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Rehearse the demo in production mode with the map and say what you'd change.
   Commit: `Polish the impact moment and refresh the docs`
 
-- [ ] **10. Average vs. the people**
+- [x] **10. Average vs. the people**
   Becomes usable: After a run, a strip sets the average resident, a faceless grey character with the town's mean change and its verdict, beside the 8 real faces, with a sentence naming who the average hides.
   Why now: A quick win, and the clearest statement of the kernel ("averages hide people"), so it comes first.
   PRD ref: `prd.md > Average vs. the People`

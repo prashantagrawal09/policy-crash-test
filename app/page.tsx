@@ -1,5 +1,6 @@
 "use client";
 
+import { AverageStrip } from "@/components/AverageStrip";
 import { ChangeChart } from "@/components/ChangeChart";
 import { PolicyInput } from "@/components/PolicyInput";
 import { PolicyPanel } from "@/components/PolicyPanel";
@@ -25,7 +26,7 @@ function showCard(residentId: string) {
   window.setTimeout(() => card.classList.remove("card-flash"), 1700);
 }
 
-// The one page, in PRD order: header, policy input, status and summary, town map, chart and panel, residents.
+// The one page, in PRD order: header, policy input, status and summary, average vs. the people, town map, chart and panel, residents.
 export default function Home() {
   const crash = useCrashTest();
   const results = crash.run?.results ?? null;
@@ -77,6 +78,8 @@ export default function Home() {
         onRetryDiaries={crash.retryDiaries}
         runId={crash.run?.runId ?? null}
       />
+
+      {results && <AverageStrip residents={RESIDENTS} results={results} faces={faces} />}
 
       <TownMap
         residents={RESIDENTS}
