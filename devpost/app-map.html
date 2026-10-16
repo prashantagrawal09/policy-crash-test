@@ -61,7 +61,9 @@
     <li><span class="tag code">Code</span><strong>The engine</strong>Applies levers in whole cents and gives each person a verdict from two lenses: % of income and % of spare money. <span class="where"><code>lib/engine.ts</code>, <code>lib/format.ts</code></span></li>
     <li><span class="tag ai">AI</span><strong>The parser</strong>Claude Haiku 5.5 turns typed text into levers through structured output, checked by zod. <span class="where"><code>lib/readPolicy.ts</code>, <code>app/api/parse/route.ts</code>, <code>prompts/parse-policy.md</code></span></li>
     <li><span class="tag ai">AI</span><strong>The diary writer</strong>Claude Sonnet 5.5 gets each resident's exact card numbers and streams one diary per line. <span class="where"><code>lib/writeDiaries.ts</code>, <code>lib/diaryInput.ts</code>, <code>app/api/diaries/route.ts</code>, <code>prompts/write-diaries.md</code></span></li>
-    <li><span class="tag code">Code</span><strong>The page</strong>A controller hook owns the run; components draw the summary, chart, panel and cards. <span class="where"><code>lib/useCrashTest.ts</code>, <code>app/page.tsx</code>, <code>components/</code></span></li>
+    <li><span class="tag code">Code</span><strong>The page</strong>A controller hook owns the run; components draw the summary, map, chart, panel and cards. <span class="where"><code>lib/useCrashTest.ts</code>, <code>app/page.tsx</code>, <code>components/</code></span></li>
+    <li><span class="tag code">Code</span><strong>The characters</strong>Each resident drawn in SVG from shared parts; the face follows the verdict, then the diary’s mood. <span class="where"><code>components/ResidentAvatar.tsx</code>, <code>lib/expressions.ts</code></span></li>
+    <li><span class="tag code">Code</span><strong>The town map</strong>Lights the places a policy touches, colours each pin by verdict, drops coins on one-off recipients and pops up reactions. It shows no numbers of its own. <span class="where"><code>components/TownMap.tsx</code>, <code>lib/townMap.ts</code></span></li>
   </ul>
 
   <h2>One action, end to end: tapping “Bus and train fares rise 20%”</h2>
@@ -69,7 +71,8 @@
     <li><div><strong>You tap the chip.</strong> <span class="where"><code>components/PolicyInput.tsx</code>: the chip’s <code>onPreset(preset.id)</code></span></div></li>
     <li><div><strong>A run starts with the hand-checked levers.</strong> No AI reads a preset. <span class="where"><code>lib/useCrashTest.ts</code>: <code>runPreset</code> → <code>startRun</code></span></div></li>
     <li><div><strong>The engine runs for all 8 people</strong>, instantly in the browser. Uncle Raju: −$12 is 12% of his $100 spare money, past the 10% line, so he “feels it”. <span class="where"><code>lib/engine.ts</code>: <code>runTown</code> → <code>runResident</code> → <code>verdict</code></span></div></li>
-    <li class="seen"><div><strong>You see the spread.</strong> “2 feel it, 4 barely affected, 2 unaffected”, the chart, the panel, and every card in its place. <span class="where"><code>lib/format.ts</code>: <code>summaryLine</code>, <code>cardText</code>, <code>chartRows</code>, <code>spareBar</code>; drawn by <code>components/StatusLine.tsx</code>, <code>ChangeChart.tsx</code>, <code>ResidentCard.tsx</code></span></div></li>
+    <li class="seen"><div><strong>You see the spread.</strong> “2 feel it, 4 barely affected, 2 unaffected”, the chart, the panel, and every card in its place, with Chloe and Raju now looking worried. <span class="where"><code>lib/format.ts</code>: <code>summaryLine</code>, <code>cardText</code>, <code>chartRows</code>, <code>spareBar</code>; faces from <code>lib/expressions.ts</code>: <code>expressionFor</code>; drawn by <code>components/StatusLine.tsx</code>, <code>ChangeChart.tsx</code>, <code>ResidentCard.tsx</code></span></div></li>
+    <li class="seen"><div><strong>The town reacts.</strong> The MRT station and bus stop light up with “Costs up ▲”, and every pin takes its verdict colour. <span class="where"><code>lib/townMap.ts</code>: <code>litLandmarks</code>, <code>coinRecipients</code>; drawn by <code>components/TownMap.tsx</code></span></div></li>
     <li class="ai"><div><strong>Diaries are requested.</strong> The server re-runs the engine (it never trusts the browser’s numbers) and sends Claude Sonnet 5.5 each card’s exact strings. <span class="where"><code>lib/useCrashTest.ts</code>: <code>requestDiaries</code> → <code>app/api/diaries/route.ts</code> → <code>lib/writeDiaries.ts</code>: <code>writeDiaries</code>, with <code>lib/diaryInput.ts</code>: <code>residentBlock</code></span></div></li>
     <li class="seen"><div><strong>Each diary drops into its card</strong> as its line arrives; a newer run drops late lines, and after 20 seconds anything missing shows “Diary didn’t come through”. <span class="where"><code>components/DiaryNote.tsx</code></span></div></li>
   </ol>
@@ -94,6 +97,9 @@
       <tr><td>How the AI reads a policy</td><td><code>prompts/parse-policy.md</code></td><td><code>npm test</code> (prompt examples), then <code>npm run eval:parser</code></td></tr>
       <tr><td>The diaries’ voice</td><td><code>prompts/write-diaries.md</code></td><td><code>npm run eval:diaries</code></td></tr>
       <tr><td>Which models run</td><td><code>.env.local</code>: <code>PARSE_MODEL</code>, <code>DIARY_MODEL</code></td><td>both evals</td></tr>
+      <tr><td>A character’s look or a face</td><td><code>components/ResidentAvatar.tsx</code> (<code>LOOKS</code>, <code>features</code>)</td><td><code>tests/expressions.test.ts</code>, then look at the cards</td></tr>
+      <tr><td>Which places a policy lights up</td><td><code>lib/townMap.ts</code>: <code>TARGET_LANDMARKS</code></td><td><code>tests/townMap.test.ts</code></td></tr>
+      <tr><td>Where a resident lives on the map</td><td><code>lib/townMap.ts</code>: <code>HOMES</code></td><td><code>tests/townMap.test.ts</code> (every home inside the map)</td></tr>
       <tr><td>Colours and stripes</td><td><code>app/globals.css</code> (<code>--hazard</code>, verdict colours)</td><td>the page, at phone and desktop widths</td></tr>
     </tbody>
   </table>
@@ -130,7 +136,7 @@ npm run build &amp;&amp; npm start     # production mode, for recording</pre>
   </details>
 
   <footer>
-    <p>A snapshot of the code at commit <code>2b07b8e</code> (16 October 2026); the code can drift after this. To reopen it, open <code>devpost/app-map.html</code> in any browser, or run <code>open devpost/app-map.html</code> on a Mac. It needs no network.</p>
+    <p>A snapshot of the code at commit <code>58ef992</code> (16 October 2026); the code can drift after this. To reopen it, open <code>devpost/app-map.html</code> in any browser, or run <code>open devpost/app-map.html</code> on a Mac. It needs no network.</p>
   </footer>
 </main>
 </body>

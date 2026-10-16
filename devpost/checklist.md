@@ -89,7 +89,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Run fares, then petrol, on the map and watch the town flip; select a pin. Say what you'd change before the polish slice.
   Commit: `Add a town map that reacts to each policy`
 
-- [ ] **9. Impact polish**
+- [x] **9. Impact polish**
   Becomes usable: When a policy lands, a short crash-test impact flash plays, big numbers count up to their values, and the cards flip smoothly, all switched off for reduced motion. The README and app map describe the characters and the map.
   Why now: Polish comes last, once the characters and the map work and you've reacted to them.
   PRD ref: `prd.md > Look and Feel`, `prd.md > Town Map`
@@ -118,7 +118,7 @@ No changes needed: the learner tried the demo, awkward inputs and phone width in
 - [x] Learning activity complete — prior practice connected: the slice 5 eval-failure investigation (focused alternative, done during the build)
 - [x] Optional edit and transfer reflection addressed — edit not applicable; transfer question offered at the wrap-up
 - [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
-- [ ] `devpost/app-map.html` refreshed for the characters and the town map (no repeat of the learning activity)
+- [x] `devpost/app-map.html` refreshed for the characters and the town map (no repeat of the learning activity); snapshot of `58ef992`, new anchors checked
 
 Activity and evidence: Prior practice, connected at the wrap-up. In slice 5 the first live eval run failed (parser 9/10, diaries 4/8). Reading the actual outputs showed equivalent fields, quoted policy amounts and correct arithmetic, not wrong numbers on screen. The learner chose to fix the eval definitions and give the diary writer the engine's spare money after, instead of changing the prompts; the re-run passed 10/10 and 8/8. Evidence: Revisions above, `evals/parser.eval.ts`, `evals/diaries.eval.ts`, `lib/diaryInput.ts` (`residentBlock`).
 Route and stops: A reference route in the app map, not toured: `lib/useCrashTest.ts` (`startRun`), then `lib/engine.ts` (`verdict`), then `tests/presets.test.ts` ("Uncle Raju feels it").
