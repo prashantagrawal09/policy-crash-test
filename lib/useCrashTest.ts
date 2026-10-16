@@ -6,7 +6,8 @@ import { runTown, type ResidentResult } from "@/lib/engine";
 import { leverText } from "@/lib/format";
 import { getPreset } from "@/lib/presets";
 import { withValue } from "@/lib/whatIf";
-import { ChatterLineSchema, DiaryLineSchema, ParseResultSchema, type ChatterLine, type DiaryLine, type Lever, type ParseResult } from "@/lib/schemas";
+import { buildYou, YourAnswersSchema, type YourAnswers } from "@/lib/yourself";
+import { ChatterLineSchema, DiaryLineSchema, ParseResultSchema, type ChatterLine, type DiaryLine, type Lever, type ParseResult, type Resident } from "@/lib/schemas";
 
 // The browser-side run controller: owns the text box, the current run, its phase and its diaries.
 
@@ -22,6 +23,7 @@ export interface CrashRun {
   assumptions: string[];
   confidence: ParseResult["confidence"] | null; // null for hand-checked presets
   results: ResidentResult[];
+  you: YourAnswers | null; // your answers, if you'd moved in: sent only with the diary request
 }
 
 export type DiaryState = { status: "pending" } | { status: "arrived"; line: DiaryLine } | { status: "failed" };
@@ -41,6 +43,11 @@ export const COULDNT_READ = "Couldn't read that one right now. Try again, or tap
 const DIARY_TIMEOUT_MS = 20_000;
 const CHATTER_TIMEOUT_MS = 20_000;
 const NO_CHATTER: ChatterState = { status: "idle", remarks: [] };
+
+// The 8 residents, plus you if you've moved in (prd.md > Add Yourself).
+function townWith(you: YourAnswers | null): Resident[] {
+  return you ? [...RESIDENTS, buildYou(you)] : RESIDENTS;
+}
 
 // One line of the diary stream; anything that isn't a well-formed diary is ignored.
 function parseDiaryEvent(line: string): DiaryLine | null {
@@ -83,6 +90,9 @@ export function useCrashTest() {
   // What-if slider values over the current run's levers; null means the policy as written.
   const [adjusted, setAdjusted] = useState<Lever[] | null>(null);
   const [chatter, setChatter] = useState<ChatterState>(NO_CHATTER);
+  // Your answers if you've moved in; nothing is saved, so a refresh moves you out.
+  const [you, setYou] = useState<YourAnswers | null>(null);
+  const youRef = useRef<YourAnswers | null>(null);
   const runIdRef = useRef(0);
   const diaryRequest = useRef<AbortController | null>(null);
   const chatterRequest = useRef<AbortController | null>(null);
@@ -108,7 +118,8 @@ export function useCrashTest() {
       const response = await fetch("/api/diaries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ policyText: target.policyText, levers: target.levers, residentIds: ids }),
+        // Your answers go only with the diary request, and only when your diary is asked for.
+        body: JSON.stringify({ policyText: target.policyText, levers: target.levers, residentIds: ids, ...(ids.includes("you") && target.you ? { you: target.you } : {}) }),
         signal: controller.signal,
       });
       if (!response.ok || !response.body) return;
@@ -199,9 +210,10 @@ export function useCrashTest() {
       levers,
       assumptions,
       confidence,
-      results: runTown(RESIDENTS, levers),
+      results: runTown(townWith(youRef.current), levers),
+      you: youRef.current,
     };
-    const ids = RESIDENTS.map((r) => r.id);
+    const ids = next.results.map((r) => r.id);
     setRun(next);
     setAdjusted(null);
     setChatter(NO_CHATTER);
@@ -286,8 +298,38 @@ export function useCrashTest() {
     startRun({ kind: "whatif" }, policyText, adjusted, run.assumptions, run.confidence);
   }
 
+  // Moving in or out while a run is on screen: the numbers re-run at once, and only your diary
+  // is written (moving is only offered between runs, never while diaries are being written).
+  const busy = reading || runPhase === "writing";
+
+  function moveIn(answers: YourAnswers): boolean {
+    const parsed = YourAnswersSchema.safeParse(answers);
+    if (!parsed.success || busy) return false;
+    youRef.current = parsed.data;
+    setYou(parsed.data);
+    if (run) {
+      const updated: CrashRun = { ...run, you: parsed.data, results: runTown(townWith(parsed.data), run.levers) };
+      setRun(updated);
+      setDiaries((current) => ({ ...current, you: { status: "pending" } }));
+      setRunPhase("writing");
+      void requestDiaries(updated, ["you"]);
+    }
+    return true;
+  }
+
+  function moveOut() {
+    if (busy) return;
+    youRef.current = null;
+    setYou(null);
+    if (run) {
+      setRun({ ...run, you: null, results: runTown(RESIDENTS, run.levers) });
+      setDiaries((current) => Object.fromEntries(Object.entries(current).filter(([id]) => id !== "you")));
+    }
+  }
+
+  const town = townWith(you);
   const activeLevers = adjusted ?? run?.levers ?? null;
-  const activeResults = run ? (adjusted ? runTown(RESIDENTS, adjusted) : run.results) : null;
+  const activeResults = run ? (adjusted ? runTown(town, adjusted) : run.results) : null;
 
   const phase: Phase = reading ? "reading" : runPhase;
   const canRun = text.trim().length > 0 && !reading;
@@ -295,6 +337,7 @@ export function useCrashTest() {
 
   return {
     text, editText, runPreset, runCurrent, canRun, phase, run, diaries, failedDiaries, retryDiaries, message, chatter,
+    town, you, moveIn, moveOut, busy,
     adjusted, activeLevers, activeResults, setLeverValue, resetWhatIf, rewriteDiaries,
   };
 }

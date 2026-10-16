@@ -55,6 +55,8 @@ export const HOMES: Record<string, { label: string; box: Box; pin: { x: number; 
   goh: { label: "Rented flat", box: { x: 682, y: 166, w: 62, h: 132 }, pin: { x: 713, y: 162 } },
   tan: { label: "Rented room", box: { x: 754, y: 206, w: 58, h: 92 }, pin: { x: 783, y: 202 } },
   marcus: { label: "Condo", box: { x: 828, y: 70, w: 74, h: 228 }, pin: { x: 865, y: 66 } },
+  // An empty plot by the MRT station until you move in (prd.md > Add Yourself).
+  you: { label: "Your place", box: { x: 196, y: 74, w: 58, h: 60 }, pin: { x: 225, y: 72 } },
 };
 
 // Where each kind of spending happens in town.

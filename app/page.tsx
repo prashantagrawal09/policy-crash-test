@@ -1,14 +1,15 @@
 "use client";
 
 import { AverageStrip } from "@/components/AverageStrip";
+import { useState } from "react";
 import { ChangeChart } from "@/components/ChangeChart";
+import { MoveIn } from "@/components/MoveIn";
 import { PolicyInput } from "@/components/PolicyInput";
 import { PolicyPanel } from "@/components/PolicyPanel";
 import { ResidentCard } from "@/components/ResidentCard";
 import { StatusLine } from "@/components/StatusLine";
 import { TownChatter } from "@/components/TownChatter";
 import { TownMap } from "@/components/TownMap";
-import { RESIDENTS } from "@/data/residents";
 import { expressionFor } from "@/lib/expressions";
 import { PRESETS } from "@/lib/presets";
 import { useConversation } from "@/lib/useConversation";
@@ -16,23 +17,38 @@ import { useCrashTest } from "@/lib/useCrashTest";
 import { tippingPoint } from "@/lib/whatIf";
 import { WhatIf } from "@/components/WhatIf";
 
+// Scrolls an element to just below the top of the screen and moves focus to it.
+function bringIntoView(element: HTMLElement) {
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const top = element.getBoundingClientRect().top + window.scrollY - 24;
+  window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
+  element.focus({ preventScroll: true });
+}
+
 // Selecting a pin on the map brings that resident's card into view and flashes it.
 function showCard(residentId: string) {
   const card = document.getElementById(`card-${residentId}`);
   if (!card) return;
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const top = card.getBoundingClientRect().top + window.scrollY - 24;
-  window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
-  card.focus({ preventScroll: true });
+  bringIntoView(card);
   card.classList.remove("card-flash");
   void card.offsetWidth; // restart the flash if it's already showing
   card.classList.add("card-flash");
   window.setTimeout(() => card.classList.remove("card-flash"), 1700);
 }
 
-// The one page, in PRD order: header, policy input, status and summary, average vs. the people, town map, town chatter, chart and panel, residents.
+// The one page, in PRD order: header, policy input, moving in, status and summary, average vs. the people, town map, town chatter, chart and panel, residents.
 export default function Home() {
   const crash = useCrashTest();
+  const town = crash.town; // the 8 residents, and you if you've moved in
+  const [moveInOpen, setMoveInOpen] = useState(false);
+  // The map's "Move in" sign opens the form and brings it into view.
+  function openMoveIn() {
+    setMoveInOpen(true);
+    requestAnimationFrame(() => {
+      const section = document.getElementById("move-in");
+      if (section) bringIntoView(section);
+    });
+  }
   // The town as it stands: the what-if sliders' values if moved, otherwise the policy as written.
   const results = crash.activeResults;
   const levers = crash.activeLevers;
@@ -42,7 +58,7 @@ export default function Home() {
 
   // Each character's face: their diary's mood once it lands, otherwise their verdict's.
   const faces = Object.fromEntries(
-    RESIDENTS.map((resident) => {
+    town.map((resident) => {
       const diary = crash.run ? crash.diaries[resident.id] : undefined;
       const verdict = results?.find((r) => r.id === resident.id)?.verdict ?? null;
       // While exploring, the diaries describe the policy as written, so faces follow the numbers.
@@ -81,10 +97,20 @@ export default function Home() {
         onTryAgain={crash.runCurrent}
       />
 
+      <MoveIn
+        you={crash.you}
+        open={moveInOpen}
+        onOpen={openMoveIn}
+        onClose={() => setMoveInOpen(false)}
+        onMoveIn={crash.moveIn}
+        onMoveOut={crash.moveOut}
+        busy={crash.busy}
+      />
+
       <StatusLine
         phase={crash.phase}
         results={results}
-        residentCount={RESIDENTS.length}
+        residentCount={town.length}
         failedDiaries={crash.failedDiaries}
         onRetryDiaries={crash.retryDiaries}
         runId={crash.run?.runId ?? null}
@@ -102,10 +128,10 @@ export default function Home() {
         />
       )}
 
-      {results && <AverageStrip residents={RESIDENTS} results={results} faces={faces} />}
+      {results && <AverageStrip residents={town} results={results} faces={faces} />}
 
       <TownMap
-        residents={RESIDENTS}
+        residents={town}
         results={results}
         levers={levers}
         runId={crash.run?.runId ?? null}
@@ -113,11 +139,12 @@ export default function Home() {
         faces={faces}
         speaking={conversation.speaking}
         onSelect={showCard}
+        onMoveIn={openMoveIn}
       />
 
       {crash.run && (
         <TownChatter
-          residents={RESIDENTS}
+          residents={town}
           status={crash.chatter.status}
           received={crash.chatter.remarks.length}
           spoken={conversation.spoken}
@@ -129,13 +156,13 @@ export default function Home() {
 
       {crash.run && (
         <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-          <ChangeChart residents={RESIDENTS} results={results ?? crash.run.results} faces={faces} />
+          <ChangeChart residents={town} results={results ?? crash.run.results} faces={faces} />
           <PolicyPanel run={crash.run} />
         </section>
       )}
 
       <section aria-label="Residents" className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {RESIDENTS.map((resident) => (
+        {town.map((resident) => (
           <ResidentCard
             key={resident.id}
             resident={resident}

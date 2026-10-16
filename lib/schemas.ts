@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Look } from "@/lib/yourself";
 
 // One set of zod schemas checks preset files, parser replies and diary lines.
 // TypeScript types are inferred from them so page and server share one shape.
@@ -116,4 +117,5 @@ export interface Resident {
   icon: string;
   income: number;
   budget: Record<Category, number>;
+  look?: Look; // only for you (resident #9): your character builder's choices
 }

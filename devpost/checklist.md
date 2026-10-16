@@ -139,7 +139,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Approve or edit the chatter prompt, then run two presets and read what the town says.
   Commit: `Let the residents talk to each other`
 
-- [ ] **14. Add yourself**
+- [x] **14. Add yourself**
   Becomes usable: "Move into town" lets you enter your age, income, spending, housing, children and car, and build your character. You become resident #9 on the map, in the cards, chart, summary and diaries, and nothing is saved.
   Why now: The personal hook comes once the town, map and chatter can take a ninth resident.
   PRD ref: `prd.md > Add Yourself`
@@ -201,3 +201,5 @@ Activity mode: Prior practice connected (focused alternative), plus the app map.
 - The diary input now gives each affected resident's spare money after, from the engine, and the eval allows it — the model was computing totals itself (Nurul: "from $500 to $900"); now every number a diary states comes from tested code (learner's decision). After these three: parser 10/10 (3 runs each), diaries 8/8.
 - Slices 7–9 added after the final review, at the learner's request ("build it crazy"): illustrated characters whose faces react and a town map that reacts to each policy. This was the scope's own Later item "Town reacting loading animation". `scope.md`, `prd.md` (new `Town Map` section) and `spec.md` (`ResidentAvatar`, `TownMap`) were updated with the learner's agreement. Presentation only: the numbers, tests and evals don't change.
 - The upgrade's final review moved from after slice 9 to after slice 15. At the planned review, the learner asked for more ("we have to improve the interface by a lot"), so slices 10–15 were added: average vs. the people, what-if sliders, a living town, town chatter, add yourself, and a guided intro. Feature freeze is Oct 24. `scope.md`, `prd.md` and `spec.md` were updated with the learner's agreement.
+- Town chatter stays among the 8 residents even after you move in. `prd.md > Add Yourself` says your answers go to Claude only for your diary, so slice 14 sends them only with the diary request instead of giving chatter a resident list.
+- "Move into town" also asks how many people live at home. Each diary's input states the household size, and guessing it from "children at home" could have put the wrong family into your diary.

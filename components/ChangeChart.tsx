@@ -54,7 +54,7 @@ export function ChangeChart({ residents, results, faces }: { residents: Resident
           return (
             <li key={row.id} className="grid grid-cols-[7.5rem_1fr] items-center gap-3 py-1 sm:grid-cols-[8.75rem_1fr]">
               <span className="flex min-w-0 items-center gap-1.5">
-                <ResidentAvatar id={row.id} expression={faces[row.id] ?? "neutral"} size={26} className="shrink-0" />
+                <ResidentAvatar id={row.id} look={resident.look} expression={faces[row.id] ?? "neutral"} size={26} className="shrink-0" />
                 <span className="truncate text-sm font-semibold">{resident.shortName}</span>
               </span>
               <div className="relative h-7">

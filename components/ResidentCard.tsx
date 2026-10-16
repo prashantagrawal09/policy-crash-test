@@ -72,7 +72,7 @@ export function ResidentCard({ resident, result, diary, expression, waiting, run
         {/* Unaffected cards keep the calm "before" look, slightly faded; their diary stays readable. */}
         <div className={`flex flex-col gap-4 transition-opacity duration-300 motion-reduce:transition-none ${verdict === "unaffected" ? "opacity-65" : ""}`}>
           <header className="flex items-start gap-3">
-            <ResidentAvatar id={resident.id} expression={expression} size={64} ringClass={style?.ring} className="-my-1 shrink-0" />
+            <ResidentAvatar id={resident.id} look={resident.look} expression={expression} size={64} ringClass={style?.ring} className="-my-1 shrink-0" />
             <div className="min-w-0 flex-1">
               <h3 className="font-display text-xl font-extrabold leading-tight font-stretch-condensed">{resident.name}</h3>
               <p className="text-sm text-ink/60">

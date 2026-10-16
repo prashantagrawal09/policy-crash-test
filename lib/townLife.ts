@@ -27,6 +27,7 @@ export const DAY: Record<string, { place: Place; out: number; back: number }> = 
   nurul: { place: "clinic", out: 13, back: 23 }, // a late hospital shift
   marcus: { place: "offices", out: 8, back: 19 },
   tan: { place: "offices", out: 9, back: 18 },
+  you: { place: "offices", out: 9, back: 18 }, // if you move in, you head to work
 };
 
 // Who takes the bus and who takes the MRT, from their everyday lines.
@@ -39,6 +40,7 @@ const TRANSPORT_STOP: Record<string, "mrt" | "bus"> = {
   nurul: "bus",
   marcus: "mrt",
   tan: "mrt",
+  you: "mrt",
 };
 
 // Where people stand at each place: the first spot, then each next one this far along.
@@ -47,7 +49,7 @@ const SPOTS: Record<Place, { x: number; y: number; step: number }> = {
   mrt: { x: 60, y: 170, step: 34 },
   hawker: { x: 52, y: 300, step: 34 },
   bus: { x: 214, y: 300, step: 30 },
-  offices: { x: 884, y: 300, step: 34 },
+  offices: { x: 878, y: 300, step: 30 },
   petrol: below("petrol"),
   childcare: below("childcare"),
   clinic: below("clinic"),

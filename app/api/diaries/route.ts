@@ -3,15 +3,18 @@ import { RESIDENTS } from "@/data/residents";
 import { anthropic, costLine, MissingKeyError } from "@/lib/anthropic";
 import { LeverSchema } from "@/lib/schemas";
 import { writeDiaries, type DiaryStats } from "@/lib/writeDiaries";
+import { buildYou, YourAnswersSchema } from "@/lib/yourself";
 
-// POST { policyText, levers, residentIds } -> one JSON object per line:
+// POST { policyText, levers, residentIds, you? } -> one JSON object per line:
 // {"type":"diary",...} as each diary arrives, then {"type":"done"} or {"type":"error"}.
 export const runtime = "nodejs";
 
 const RequestSchema = z.object({
   policyText: z.string().trim().min(1).max(500),
   levers: z.array(LeverSchema).max(20),
-  residentIds: z.array(z.string()).min(1).max(RESIDENTS.length),
+  residentIds: z.array(z.string()).min(1).max(RESIDENTS.length + 1),
+  // Your answers, if you've moved in: you're rebuilt here from them, never taken as a resident.
+  you: YourAnswersSchema.optional(),
 });
 
 const encoder = new TextEncoder();
@@ -28,7 +31,8 @@ export async function POST(request: Request) {
   if (!parsed.success) return Response.json({ ok: false }, { status: 400 });
 
   const { policyText, levers } = parsed.data;
-  const ids = [...new Set(parsed.data.residentIds)].filter((id) => RESIDENTS.some((r) => r.id === id));
+  const town = parsed.data.you ? [...RESIDENTS, buildYou(parsed.data.you)] : RESIDENTS;
+  const ids = [...new Set(parsed.data.residentIds)].filter((id) => town.some((r) => r.id === id));
   if (ids.length === 0) return Response.json({ ok: false }, { status: 400 });
 
   try {
@@ -53,7 +57,7 @@ export async function POST(request: Request) {
         if (!closed) controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`));
       };
       try {
-        for await (const event of writeDiaries({ policyText, levers, ids, signal: abort.signal })) {
+        for await (const event of writeDiaries({ policyText, levers, ids, residents: town, signal: abort.signal })) {
           if (event.type === "diary") send({ type: "diary", ...event.line });
           else if (event.type === "dropped") console.warn(`[diaries] dropped a line (${event.reason})`);
           else if (event.type === "done") {

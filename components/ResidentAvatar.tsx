@@ -1,9 +1,10 @@
 import { useId, type ReactNode } from "react";
 import type { Expression } from "@/lib/expressions";
+import type { Look as YourChoices } from "@/lib/yourself";
 
-// The 8 residents as flat, friendly characters: a head-and-shoulders bust in a 100×100 circle.
-// Everyone is built from the same parts (head, face, outfit) plus their own hair and props, so
-// any face can show any of the five expressions.
+// The 8 residents (and you, if you move in) as flat, friendly characters: a head-and-shoulders
+// bust in a 100×100 circle. Everyone is built from the same parts (head, face, outfit) plus their
+// own hair and props, so any face can show any of the five expressions.
 
 const INK = "#2B1B12";
 // Shoulders, drawn below the circle's edge so a scaled-down person (the couple) still fills it.
@@ -241,6 +242,131 @@ const MEI_LING: Look = {
   ),
 };
 
+// ---- You: drawn from the character builder's choices ----
+
+const TONES: Record<YourChoices["skin"], { skin: string; shade: string; lips: string }> = {
+  tone1: { skin: "#F7D7BD", shade: "#E4B694", lips: "#B5545C" },
+  tone2: { skin: "#F1C9A0", shade: "#DDA87C", lips: "#A65A4E" },
+  tone3: { skin: "#D7A275", shade: "#BE8657", lips: "#A8505A" },
+  tone4: { skin: "#C68E5C", shade: "#A9713F", lips: "#6E3A26" },
+  tone5: { skin: "#8D5A36", shade: "#6F4428", lips: "#4A2618" },
+};
+
+export const HAIR_FILL: Record<YourChoices["hairColour"], string> = { black: "#1A1412", brown: "#5A3A22", grey: "#A3A3A3" };
+
+// Swatches for the character builder.
+export const SKIN_SWATCH = Object.fromEntries(Object.entries(TONES).map(([tone, { skin }]) => [tone, skin])) as Record<YourChoices["skin"], string>;
+
+function yourHair(style: YourChoices["hair"], fill: string): { hair: ReactNode; hairBack?: ReactNode } {
+  switch (style) {
+    case "fringe":
+      return { hair: <path d="M30.5 45 C29.5 26 40 19 50 19 C61 19 70.5 26 69.5 45 C68 37 66 34 63.5 33 L61 37.5 L58 32 L54.5 36.5 L51 31 L47 36 L43.5 31.5 L40.5 37 L37.5 33 C34 35 32 39 30.5 45 Z" fill={fill} /> };
+    case "long":
+      return {
+        hairBack: <path d="M30 46 C28 27 38 19 50 19 C62 19 72 27 70 46 L71.6 75 Q66 80 61 75 L61 52 L39 52 L39 75 Q34 80 28.4 75 Z" fill={fill} />,
+        hair: <path d="M31.5 44 C31.5 29 40 22.5 50 22.5 C60 22.5 68.5 29 68.5 44 C64 35 57 31.5 49 33.5 C44 35 40 38.5 38 43 C36 38 34 40 31.5 44 Z" fill={fill} />,
+      };
+    case "bun":
+      return {
+        hair: (
+          <>
+            <circle cx="50" cy="18.5" r="7.4" fill={fill} />
+            <path d="M31.5 45 C31 29 39.5 22.5 50 22.5 C60.5 22.5 69 29 68.5 45 C67 38 62 33 56 31.5 C52 33.5 46 33.5 42 31 C37 33.5 33.5 38 31.5 45 Z" fill={fill} />
+          </>
+        ),
+      };
+    case "cap":
+      // A hazard-yellow cap: the crash-test lab's colours.
+      return {
+        hair: (
+          <>
+            <path d="M31.8 45 L33 36.5 L36.2 37.5 L35.6 46.5 Z M68.2 45 L67 36.5 L63.8 37.5 L64.4 46.5 Z" fill={fill} />
+            <path d="M30.8 36 C30.8 22 40 16.8 50 16.8 C60 16.8 69.2 22 69.2 36 Z" fill="#FFD400" />
+            <path d="M42 20.5 Q50 18.2 58 20.5 L57.2 31 Q50 29.2 42.8 31 Z" fill="#111111" />
+            <path d="M29 36 Q50 31 71 36 Q70.5 39.2 50 38.8 Q29.5 39.2 29 36 Z" fill="#111111" />
+          </>
+        ),
+      };
+    case "bald":
+      return {
+        hair: (
+          <>
+            <path d="M31.5 48.5 C30 40 31.6 33 36.2 30 C35.2 36 35.6 42 36.6 49.5 Z" fill={fill} />
+            <path d="M68.5 48.5 C70 40 68.4 33 63.8 30 C64.8 36 64.4 42 63.4 49.5 Z" fill={fill} />
+          </>
+        ),
+      };
+    default:
+      return {
+        hair: (
+          <>
+            <path d="M32 43 C31.5 27 40 21 50 21 C61 21 68.5 27 68 43 C66 34 61 30.5 55 30 C50 32 44 30.5 40 31.5 C35.5 33 33.5 37 32 43 Z" fill={fill} />
+            <path d="M40 23.5 Q50 15 60 22.5 Q52 20.5 44 25.5 Z" fill={fill} />
+          </>
+        ),
+      };
+  }
+}
+
+const YOUR_OUTFITS: Record<YourChoices["outfit"], ReactNode> = {
+  tee: (
+    <>
+      {bust("#FFD400")}
+      <path d="M38 75 Q50 86 62 75 Q58 73 50 79 Q42 73 38 75 Z" fill="#E0B800" />
+    </>
+  ),
+  shirt: (
+    <>
+      {bust("#FBFAF6")}
+      <path d="M41 73.5 L47.6 82 L50 76.5 Z M59 73.5 L52.4 82 L50 76.5 Z" fill="#FFFFFF" stroke="#C9C3B6" strokeWidth="0.7" />
+      <circle cx="50" cy="88" r="0.95" fill="#C9C3B6" />
+      <circle cx="50" cy="94" r="0.95" fill="#C9C3B6" />
+    </>
+  ),
+  hoodie: (
+    <>
+      {bust("#D64545")}
+      <path d="M36.5 75.5 Q50 88.5 63.5 75.5 Q60 72.5 50 78.5 Q40 72.5 36.5 75.5 Z" fill="#B83A3A" />
+      <path d="M47 80.5 L46.3 93 M53 80.5 L53.7 93" stroke="#FBE3E3" strokeWidth="1.2" strokeLinecap="round" />
+    </>
+  ),
+  blazer: (
+    <>
+      {bust("#2B3A55")}
+      <path d="M42 74 L50 92 L58 74 Z" fill="#FBFAF6" />
+      <path d="M42 74 L47 90 L40.5 84 Z M58 74 L53 90 L59.5 84 Z" fill="#22304A" />
+    </>
+  ),
+};
+
+const YOUR_PROPS: Record<Exclude<YourChoices["prop"], "none" | "glasses">, ReactNode> = {
+  headphones: (
+    <>
+      <path d="M35 77.5 Q50 89.5 65 77.5" fill="none" stroke="#1F2937" strokeWidth="3.4" />
+      <rect x="29" y="71.5" width="9" height="11" rx="3.5" fill="#111827" />
+      <rect x="62" y="71.5" width="9" height="11" rx="3.5" fill="#111827" />
+    </>
+  ),
+  lanyard: (
+    <>
+      <path d="M40 74 L47 96 M60 74 L53 96" stroke="#FFD400" strokeWidth="2.4" />
+      <rect x="43" y="95" width="14" height="11" rx="1.5" fill="#FFFFFF" stroke="#111111" strokeWidth="0.9" />
+      <rect x="43" y="95" width="14" height="3.4" rx="1" fill="#111111" />
+    </>
+  ),
+};
+
+function yourLook(choices: YourChoices): Look {
+  return {
+    ...TONES[choices.skin],
+    ...yourHair(choices.hair, HAIR_FILL[choices.hairColour]),
+    brow: choices.hairColour === "grey" ? "#8A8A8A" : undefined,
+    outfit: YOUR_OUTFITS[choices.outfit],
+    glasses: choices.prop === "glasses",
+    front: choices.prop === "headphones" || choices.prop === "lanyard" ? YOUR_PROPS[choices.prop] : undefined,
+  };
+}
+
 const NOSE = <path d="M48.6 52.2 Q50 53.7 51.4 52.2" fill="none" stroke={INK} strokeOpacity="0.35" strokeWidth="1.3" strokeLinecap="round" />;
 
 function features(expression: Expression, look: Look): ReactNode {
@@ -352,12 +478,13 @@ interface Props {
   size?: number;
   ringClass?: string; // a stroke colour class for the verdict ring, e.g. "stroke-feels"
   className?: string;
+  look?: YourChoices; // for you: drawn from the character builder instead of by id
 }
 
 // Decorative by default: the name, verdict and mood are always in text nearby.
-export function ResidentAvatar({ id, expression = "neutral", size = 56, ringClass, className = "" }: Props) {
+export function ResidentAvatar({ id, expression = "neutral", size = 56, ringClass, className = "", look: choices }: Props) {
   const clipId = `avatar-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
-  const look = LOOKS[id];
+  const look = choices ? yourLook(choices) : LOOKS[id];
 
   return (
     <svg viewBox="0 0 100 100" width={size} height={size} aria-hidden="true" className={className}>

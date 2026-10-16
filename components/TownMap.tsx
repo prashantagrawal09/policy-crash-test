@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { Moon, Plus, Sun } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { ResidentResult } from "@/lib/engine";
 import type { Expression } from "@/lib/expressions";
@@ -30,6 +30,7 @@ interface Props {
   faces: Record<string, Expression>;
   speaking: ChatterLine | null; // the remark of town chatter being said right now
   onSelect: (residentId: string) => void;
+  onMoveIn: () => void; // the "Move in" sign on the empty plot
 }
 
 const pct = (value: number, of: number) => `${(value / of) * 100}%`;
@@ -106,8 +107,6 @@ function Scene() {
         [900, 372],
         [942, 392],
         [978, 366],
-        [258, 118],
-        [222, 96],
         [612, 120],
         [652, 104],
       ].map(([x, y]) => (
@@ -294,18 +293,38 @@ function Scene() {
   );
 }
 
-// ---- What the policy touches ----
+// ---- Your place (prd.md > Add Yourself) ----
 
-function boxesFor(landmark: Landmark): Box[] {
-  if (landmark === "homes") return Object.values(HOMES).map((home) => home.box);
-  return [LANDMARKS[landmark].box];
+// An empty plot with a sign until you move in; then a small house in the lab's yellow.
+function YourPlace({ movedIn, lit }: { movedIn: boolean; lit: boolean }) {
+  const b = HOMES.you.box;
+  if (!movedIn) {
+    return (
+      <g>
+        <rect x={b.x} y={b.y + 18} width={b.w} height={b.h - 18} rx="4" fill="#DCE8CF" stroke="#8DA77A" strokeWidth="1.4" strokeDasharray="5 4" />
+        <rect x={b.x + b.w / 2 - 1.2} y={b.y + 30} width="2.4" height="26" fill="#8B6A4A" />
+      </g>
+    );
+  }
+  return (
+    <g>
+      <rect x={b.x + 5} y={b.y + 22} width={b.w - 10} height={b.h - 22} fill="#FFF3C4" stroke="#C9A75A" strokeWidth="1.2" />
+      <polygon points={`${b.x - 2},${b.y + 24} ${b.x + b.w / 2},${b.y + 2} ${b.x + b.w + 2},${b.y + 24}`} fill="#FFD400" stroke="#111111" strokeWidth="1.4" />
+      <rect x={b.x + b.w / 2 - 6} y={b.y + b.h - 18} width="12" height="18" fill="#111111" />
+      {[b.x + 11, b.x + b.w - 21].map((x) => (
+        <rect key={x} x={x} y={b.y + 32} width="10" height="9" fill={lit ? "#FFD98A" : "#8FB3D9"} style={{ transition: `fill ${HOUR_MS}ms ease-in-out` }} />
+      ))}
+    </g>
+  );
 }
 
-function Glows({ lit }: { lit: Map<Landmark, Direction> }) {
+// ---- What the policy touches ----
+
+function Glows({ lit, homes }: { lit: Map<Landmark, Direction>; homes: Box[] }) {
   return (
     <>
       {[...lit.keys()].flatMap((landmark) =>
-        boxesFor(landmark).map((box, i) => (
+        (landmark === "homes" ? homes : [LANDMARKS[landmark].box]).map((box, i) => (
           <rect
             key={`${landmark}-${i}`}
             x={box.x - 5}
@@ -416,7 +435,7 @@ function TalkLine({ from, to }: { from: Point; to: Point }) {
 
 const HOME_PINS: Record<string, Point> = Object.fromEntries(Object.entries(HOMES).map(([id, home]) => [id, home.pin]));
 
-export function TownMap({ residents, results, levers, runId, diaries, faces, speaking, onSelect }: Props) {
+export function TownMap({ residents, results, levers, runId, diaries, faces, speaking, onSelect, onMoveIn }: Props) {
   const lit = levers ? litLandmarks(levers) : new Map<Landmark, Direction>();
   const coins = new Set(results ? coinRecipients(results) : []);
 
@@ -429,6 +448,7 @@ export function TownMap({ residents, results, levers, runId, diaries, faces, spe
   const desired = Object.fromEntries(residents.map((r) => [r.id, gathered[r.id]?.point ?? whereAt(r.id, hour)]));
   const legs = useWalkers(desired, homes, !still);
   const dark = still ? 0 : darkness(hour);
+  const movedIn = residents.some((r) => r.id === "you");
 
   // Reactions pop up for a few seconds as each diary lands; hovering or focusing a pin shows them again.
   const [popped, setPopped] = useState<string[]>([]);
@@ -478,15 +498,27 @@ export function TownMap({ residents, results, levers, runId, diaries, faces, spe
           <div className="relative w-full" style={{ aspectRatio: `${MAP_WIDTH} / ${MAP_HEIGHT}` }}>
             <svg viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} className="absolute inset-0 h-full w-full rounded-b-md" aria-hidden="true">
               <Scene />
+              <YourPlace movedIn={movedIn} lit={dark >= 0.7} />
               <Night dark={dark} />
               <g key={runId ?? "calm"}>
-                <Glows lit={lit} />
+                <Glows lit={lit} homes={residents.map((r) => HOMES[r.id].box)} />
                 <Tags lit={lit} />
               </g>
               {speaking && legs[speaking.speaker] && legs[speaking.listener] && (
                 <TalkLine key={`${speaking.speaker}-${speaking.text}`} from={legs[speaking.speaker].point} to={legs[speaking.listener].point} />
               )}
             </svg>
+
+            {!movedIn && (
+              <button
+                type="button"
+                onClick={onMoveIn}
+                className="absolute z-[5] inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 whitespace-nowrap rounded-full border-2 border-ink bg-hazard px-2 py-0.5 text-[11px] font-black uppercase tracking-wide shadow-sm transition-transform hover:-translate-y-[60%] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ink/30 motion-reduce:transition-none"
+                style={{ left: pct(HOMES.you.pin.x, MAP_WIDTH), top: pct(HOMES.you.box.y + 30, MAP_HEIGHT) }}
+              >
+                <Plus size={12} strokeWidth={3} aria-hidden /> Move in
+              </button>
+            )}
 
             {residents.map((resident) => {
               const leg = legs[resident.id] ?? { point: HOME_PINS[resident.id], ms: 0, walking: false };
@@ -553,7 +585,12 @@ export function TownMap({ residents, results, levers, runId, diaries, faces, spe
                       <span key={`ping-${runId}`} className={`impact-ping absolute top-0 h-[46px] w-[46px] rounded-full ${VERDICT_STYLES[verdict].band}`} aria-hidden />
                     )}
                     <span className={`relative rounded-full bg-white p-0.5 shadow-sm ${leg.walking ? "walk-bob" : ""}`}>
-                      <ResidentAvatar id={resident.id} expression={faces[resident.id] ?? "neutral"} size={42} ringClass={verdict ? VERDICT_STYLES[verdict].ring : "stroke-ink/25"} />
+                      {resident.id === "you" && (
+                        <span className="absolute -right-2 -top-1 z-10 rounded bg-ink px-1 py-px text-[9px] font-black leading-none text-hazard" aria-hidden>
+                          YOU
+                        </span>
+                      )}
+                      <ResidentAvatar id={resident.id} look={resident.look} expression={faces[resident.id] ?? "neutral"} size={42} ringClass={verdict ? VERDICT_STYLES[verdict].ring : "stroke-ink/25"} />
                     </span>
                     <span className="-mt-px h-0 w-0 border-x-[6px] border-t-[8px] border-x-transparent border-t-white drop-shadow-sm" aria-hidden />
                   </button>

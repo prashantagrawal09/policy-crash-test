@@ -215,7 +215,7 @@ PRD ref: `prd.md > The Core Journey`, `prd.md > States and Boundaries`.
   - **`WhatIf`** with `lib/whatIf.ts`: replaces lever values and re-runs the engine in the browser; tipping points come from searching values in whole steps. Diaries are re-requested only on demand. Implements `prd.md > What-if Sliders and Tipping Points`.
   - **Living town** in `TownMap` with `lib/townLife.ts`: each resident's usual place, the spot they go to when a policy lands (the lit place behind the change that costs them most, found by running the engine lever by lever), and CSS-transitioned positions. Ambient SVG motion (train, bus, light) is off for reduced motion. Implements `prd.md > Living Town`.
   - **Town chatter:** `POST /api/chatter` with `lib/writeChatter.ts` and `prompts/town-chatter.md` (approved by you), streamed as one JSON line per remark (speaker, listener, text), and checked by `evals/chatter.eval.ts`. Implements `prd.md > Town Chatter`.
-  - **`MoveIn`** form with `lib/yourself.ts`: builds a resident from your answers; the engine, cards, map and diaries take a 9th resident. Implements `prd.md > Add Yourself`.
+  - **`MoveIn`** form with `lib/yourself.ts`: builds a resident from your answers (checked with zod; the server rebuilds you from the same answers); the engine, summary, chart, cards, map and diaries take a 9th resident, while town chatter stays among the 8. Implements `prd.md > Add Yourself`.
   - **`GuidedIntro`**: a scroll story using the presets and the engine only. Implements `prd.md > Guided Intro`.
 
 ### Tests

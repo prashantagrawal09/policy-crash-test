@@ -4,7 +4,7 @@ import { anthropic, DIARY_MODEL, errorKind } from "@/lib/anthropic";
 import { buildDiaryInput } from "@/lib/diaryInput";
 import { runTown } from "@/lib/engine";
 import { loadPrompt } from "@/lib/prompts";
-import { DiaryLineSchema, type DiaryLine, type Lever } from "@/lib/schemas";
+import { DiaryLineSchema, type DiaryLine, type Lever, type Resident } from "@/lib/schemas";
 
 // Server only: writes the diaries with Claude Sonnet 5.5 and your diary prompt, yielding each
 // one as soon as its line is complete. Used by POST /api/diaries and by the diary eval, so the
@@ -30,14 +30,15 @@ export async function* writeDiaries(args: {
   policyText: string;
   levers: Lever[];
   ids: string[];
+  residents?: Resident[]; // the 8, plus you if you've moved in
   signal?: AbortSignal;
 }): AsyncGenerator<DiaryEvent> {
-  const { policyText, levers, ids, signal } = args;
+  const { policyText, levers, ids, residents = RESIDENTS, signal } = args;
   const client = anthropic();
 
   // The numbers are re-run here, never taken from the browser.
-  const results = runTown(RESIDENTS, levers);
-  const input = buildDiaryInput({ policyText, residents: RESIDENTS, results, ids });
+  const results = runTown(residents, levers);
+  const input = buildDiaryInput({ policyText, residents, results, ids });
   const system = await loadPrompt("write-diaries");
 
   const started = performance.now();

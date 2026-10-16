@@ -42,7 +42,7 @@ export function AverageStrip({ residents, results, faces }: { residents: Residen
           const style = VERDICT_STYLES[result.verdict];
           return (
             <li key={resident.id} className="flex flex-col items-center" title={`${resident.shortName}: ${VERDICT_LABELS[result.verdict]}`}>
-              <ResidentAvatar id={resident.id} expression={faces[resident.id] ?? "neutral"} size={38} ringClass={style.ring} />
+              <ResidentAvatar id={resident.id} look={resident.look} expression={faces[resident.id] ?? "neutral"} size={38} ringClass={style.ring} />
               <span className="sr-only">
                 {resident.shortName}: {VERDICT_LABELS[result.verdict]}
               </span>
