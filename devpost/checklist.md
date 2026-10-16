@@ -69,7 +69,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Run `npm run build && npm start`, rehearse the 90-second demo at desktop width, then open the page in a narrow window or on your phone.
   Commit: `Polish motion and phone layout, add README`
 
-- [ ] **7. Characters whose faces react**
+- [x] **7. Characters whose faces react**
   Becomes usable: Every resident is drawn as an illustrated character carrying their role (hawker apron, driver's cap, student backpack and glasses, the couple, white hair and walking stick, scrubs and stethoscope, hi-vis vest, hoodie and headphones) in place of the initials. They appear on the cards and beside the chart's names. Faces react: calm before a run and when unaffected or barely affected, a smile when better off, worried brows when they feel it, stressed with a sweat drop when hard hit, then the diary's own mood once it lands.
   Why now: The map's pins reuse these characters, so they come first; it is contained, and it changes the existing cards straight away.
   PRD ref: `prd.md > Look and Feel` (avatars), `prd.md > Resident Cards`
