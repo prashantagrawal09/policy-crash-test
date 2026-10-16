@@ -174,3 +174,47 @@ body {
   animation: impact-jolt 420ms ease-out;
   @media (prefers-reduced-motion: reduce) { animation: none; }
 }
+
+/* The living town (prd.md > Living Town): the train, bus and a car run, and walkers bob as they
+   go. With reduced motion they all stay put (the car stays off the map). */
+@keyframes train-run {
+  0% { transform: translateX(1020px); animation-timing-function: ease-out; }
+  38%, 52% { transform: translateX(28px); animation-timing-function: ease-in; }
+  100% { transform: translateX(-220px); }
+}
+
+@keyframes bus-run {
+  0% { transform: translateX(840px); animation-timing-function: ease-out; }
+  30%, 46% { transform: translateX(0); animation-timing-function: ease-in; }
+  100% { transform: translateX(-300px); }
+}
+
+@keyframes car-run {
+  from { transform: translateX(-80px); }
+  to { transform: translateX(1080px); }
+}
+
+@keyframes walk-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@utility train-run {
+  animation: train-run 18s infinite;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}
+
+@utility bus-run {
+  animation: bus-run 21s infinite;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}
+
+@utility car-run {
+  animation: car-run 9s linear 3s infinite;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}
+
+@utility walk-bob {
+  animation: walk-bob 380ms ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}

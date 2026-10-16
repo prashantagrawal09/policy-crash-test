@@ -1,18 +1,22 @@
 "use client";
 
+import { Moon, Sun } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { ResidentResult } from "@/lib/engine";
 import type { Expression } from "@/lib/expressions";
 import { VERDICT_LABELS } from "@/lib/format";
 import type { Lever, Resident } from "@/lib/schemas";
+import { clockLabel, darkness, gatherings, HOUR_MS, whereAt, type Point } from "@/lib/townLife";
 import { coinRecipients, directionLabel, HOMES, LANDMARKS, litLandmarks, MAP_HEIGHT, MAP_WIDTH, type Box, type Direction, type Landmark } from "@/lib/townMap";
 import type { DiaryState } from "@/lib/useCrashTest";
+import { useReducedMotion, useTownClock, useWalkers } from "@/lib/useTownLife";
 import { ResidentAvatar } from "./ResidentAvatar";
 import { VERDICT_STYLES } from "./verdictStyles";
 
-// The town reacting to a policy (prd.md > Town Map): the places it touches light up, each
-// resident's pin takes their verdict colour, coins drop on one-off recipients, and reactions pop
-// up as diaries land. The scene is SVG; the pins are HTML buttons laid over it.
+// The town reacting to a policy (prd.md > Town Map, Living Town): residents go about their day
+// while the train, bus and daylight move; when a policy lands, the places it touches light up and
+// the people it reaches walk there, take their verdict colour and react. Coins drop on one-off
+// recipients and reactions pop up as diaries land. The scene is SVG; the pins are HTML buttons over it.
 
 const BUBBLE_MS = 3000;
 const ARROWS: Record<Direction, string> = { up: "▲", down: "▼", mixed: "▲▼" };
@@ -68,18 +72,34 @@ function Scene() {
       <rect x="0" y="298" width={MAP_WIDTH} height="34" fill="#CFCBC2" />
       <line x1="0" y1="315" x2={MAP_WIDTH} y2="315" stroke="#FFFFFF" strokeWidth="2" strokeDasharray="16 12" />
       <rect x="0" y="332" width={MAP_WIDTH} height="5" fill="#BDB7AB" />
-      {/* MRT viaduct and train */}
+      {/* MRT viaduct and train (it runs in, stops at the station and runs on) */}
       <rect x="0" y="34" width={MAP_WIDTH} height="7" fill="#AEB5BF" />
       {[90, 250, 410, 650, 810, 970].map((x) => (
         <rect key={x} x={x} y="41" width="6" height="12" fill="#AEB5BF" />
       ))}
-      <g>
-        <rect x="560" y="17" width="190" height="18" rx="7" fill="#F1F4F8" stroke="#8D97A3" strokeWidth="1.2" />
-        <rect x="560" y="28" width="190" height="3" fill="#D84B4B" />
-        {[574, 600, 626, 652, 678, 704, 726].map((x) => (
+      <g className="train-run" transform="translate(560 0)">
+        <rect x="0" y="17" width="190" height="18" rx="7" fill="#F1F4F8" stroke="#8D97A3" strokeWidth="1.2" />
+        <rect x="0" y="28" width="190" height="3" fill="#D84B4B" />
+        {[14, 40, 66, 92, 118, 144, 166].map((x) => (
           <rect key={x} x={x} y="20" width="16" height="6" rx="1.5" fill="#9CC6E6" />
         ))}
       </g>
+      {/* A car passing along the far lane (only while the town moves; it starts off the map) */}
+      <g className="car-run" transform="translate(-80 0)">
+        <rect x="0" y="319" width="40" height="11" rx="4" fill="#E07A5F" />
+        <rect x="8" y="314" width="22" height="7" rx="3" fill="#E07A5F" />
+        <rect x="11" y="315.5" width="7" height="4.5" rx="1" fill="#CDE7F5" />
+        <rect x="20" y="315.5" width="7" height="4.5" rx="1" fill="#CDE7F5" />
+        <circle cx="9" cy="330" r="3.2" fill="#333333" />
+        <circle cx="31" cy="330" r="3.2" fill="#333333" />
+      </g>
+      {/* Street lamps */}
+      {LAMPS.map((x) => (
+        <g key={x}>
+          <rect x={x - 1} y="276" width="2" height="20" fill="#6B7280" />
+          <circle cx={x} cy="276" r="3" fill="#F2E6B8" stroke="#6B7280" strokeWidth="0.8" />
+        </g>
+      ))}
       {/* Trees */}
       {[
         [900, 372],
@@ -123,6 +143,9 @@ function Scene() {
         <rect x={bus.box.x + 10} y={bus.box.y + 14} width="3" height="34" fill="#6B7280" />
         <rect x={bus.box.x + 53} y={bus.box.y + 14} width="3" height="34" fill="#6B7280" />
         <rect x={bus.box.x + 15} y={bus.box.y + 38} width="36" height="4" fill="#8B5E3C" />
+      </g>
+      {/* The bus (it pulls in at the stop, waits and drives on) */}
+      <g className="bus-run">
         <rect x={bus.box.x - 4} y={bus.box.y + 57} width="74" height="22" rx="5" fill="#3E8E5E" />
         {[0, 1, 2, 3].map((i) => (
           <rect key={i} x={bus.box.x + 2 + i * 16} y={bus.box.y + 61} width="12" height="7" rx="1" fill="#CDE7F5" />
@@ -310,10 +333,12 @@ function Tags({ lit }: { lit: Map<Landmark, Direction> }) {
         const text = `${landmark === "homes" ? "Housing costs" : directionLabel(landmark, direction)} ${ARROWS[direction]}`;
         const width = text.length * 6.4 + 14;
         const x = Math.min(Math.max(box.x + box.w / 2 - width / 2, 4), MAP_WIDTH - width - 4);
+        // Places below the road carry their tag inside, so the people gathered on top don't hide it.
+        const y = box.y >= 340 ? box.y + 48 : box.y - 22;
         return (
           <g key={landmark} className="tag-pop">
-            <rect x={x} y={box.y - 22} width={width} height="18" rx="9" fill="#111111" />
-            <text x={x + width / 2} y={box.y - 9.5} textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#FFD400">
+            <rect x={x} y={y} width={width} height="18" rx="9" fill="#111111" />
+            <text x={x + width / 2} y={y + 12.5} textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#FFD400">
               {text}
             </text>
           </g>
@@ -323,9 +348,71 @@ function Tags({ lit }: { lit: Map<Landmark, Direction> }) {
   );
 }
 
+// ---- Day and night ----
+
+const LAMPS = [260, 474, 516, 677, 820, 907];
+
+// Lit cells in the same grid that `Windows` draws, about two in three of them.
+function litCells(box: Box, cols: number, seed: number, top = 14, gap = 16): ReactNode[] {
+  const cells: ReactNode[] = [];
+  const cellW = (box.w - 12) / cols - 4;
+  for (let y = box.y + top, row = 0; y < box.y + box.h - 16; y += gap, row++) {
+    for (let c = 0; c < cols; c++) {
+      if ((row * 2 + c * 3 + seed) % 3 === 0) continue;
+      cells.push(<rect key={`${box.x}-${y}-${c}`} x={box.x + 8 + c * (cellW + 4)} y={y} width={cellW} height={8} rx={1} fill="#FFD98A" />);
+    }
+  }
+  return cells;
+}
+
+// Night falls: the town dims, and windows and street lamps come on.
+function Night({ dark }: { dark: number }) {
+  const fade = { transition: `opacity ${HOUR_MS}ms ease-in-out` };
+  const { lim, raju, nurul, faizal, goh, chloe, tan, marcus } = HOMES;
+  return (
+    <g>
+      <rect x="0" y="0" width={MAP_WIDTH} height={MAP_HEIGHT} fill="#1B2547" style={{ ...fade, opacity: dark * 0.45 }} />
+      <g style={{ ...fade, opacity: dark >= 0.7 ? 1 : 0 }}>
+        {litCells(lim.box, 3, 0)}
+        {litCells(raju.box, 3, 1)}
+        {litCells(nurul.box, 3, 2)}
+        {litCells(faizal.box, 3, 1)}
+        {litCells(goh.box, 2, 0)}
+        <rect x={chloe.box.x + 12} y={chloe.box.y + 40} width="12" height="10" fill="#FFD98A" />
+        {[0, 2].map((i) => (
+          <rect key={i} x={tan.box.x + 8 + i * 16} y={tan.box.y + 14} width="10" height="18" rx="5" fill="#FFD98A" />
+        ))}
+        {Array.from({ length: 17 }, (_, i) => i)
+          .filter((i) => i % 3 !== 1)
+          .map((i) => (
+            <rect key={i} x={marcus.box.x + 4} y={marcus.box.y + 10 + i * 12} width={marcus.box.w - 8} height="5" fill="#FFD98A" />
+          ))}
+        {LAMPS.map((x) => (
+          <g key={x}>
+            <circle cx={x} cy="276" r="9" fill="#FFE7A3" opacity="0.55" />
+            <ellipse cx={x} cy="306" rx="24" ry="8" fill="#FFE7A3" opacity="0.35" />
+          </g>
+        ))}
+      </g>
+    </g>
+  );
+}
+
+const HOME_PINS: Record<string, Point> = Object.fromEntries(Object.entries(HOMES).map(([id, home]) => [id, home.pin]));
+
 export function TownMap({ residents, results, levers, runId, diaries, faces, onSelect }: Props) {
   const lit = levers ? litLandmarks(levers) : new Map<Landmark, Direction>();
   const coins = new Set(results ? coinRecipients(results) : []);
+
+  // The living town: everyone follows their day until a policy reaches them, then goes to the
+  // place behind it. With reduced motion the clock stops and everyone stays at home.
+  const still = useReducedMotion();
+  const hour = useTownClock(!still);
+  const gathered = results && levers ? gatherings(residents, levers, results) : {};
+  const homes = Object.fromEntries(residents.map((r) => [r.id, HOME_PINS[r.id]]));
+  const desired = Object.fromEntries(residents.map((r) => [r.id, gathered[r.id]?.point ?? whereAt(r.id, hour)]));
+  const legs = useWalkers(desired, homes, !still);
+  const dark = still ? 0 : darkness(hour);
 
   // Reactions pop up for a few seconds as each diary lands; hovering or focusing a pin shows them again.
   const [popped, setPopped] = useState<string[]>([]);
@@ -351,34 +438,57 @@ export function TownMap({ residents, results, levers, runId, diaries, faces, onS
   return (
     <figure className="mt-6 overflow-hidden rounded-lg border border-ink/15 bg-white">
       <figcaption className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-5 pt-4">
-        <span className="font-display text-2xl font-black font-stretch-condensed">Around town</span>
+        <span className="flex items-baseline gap-2.5">
+          <span className="font-display text-2xl font-black font-stretch-condensed">Around town</span>
+          {!still && (
+            <span className="inline-flex items-center gap-1 self-center rounded-full bg-ink px-2 py-0.5 text-xs font-bold tabular-nums text-hazard" aria-hidden>
+              {dark >= 0.7 ? <Moon size={12} strokeWidth={2.5} /> : <Sun size={12} strokeWidth={2.5} />}
+              {clockLabel(hour)}
+            </span>
+          )}
+        </span>
         <span className="text-xs text-ink/55">
-          {results ? "Lit places are what the policy touches. Select someone to see their card." : "Everyone at home. Pick a policy and watch the town react."}
+          {results
+            ? `Lit places are what the policy touches${still ? "" : ", and the people it reaches go there"}. Select someone to see their card.`
+            : still
+              ? "Everyone at home. Pick a policy and watch the town react."
+              : "A day in town. Pick a policy and watch who it reaches."}
         </span>
       </figcaption>
       <div className="overflow-x-auto px-3 pb-3">
         <div className="relative min-w-[760px] rounded-md bg-[#E6EED9] pt-10">
+          {/* The strip above the scene darkens with it at night. */}
+          <div className="pointer-events-none absolute inset-0 rounded-md bg-[#1B2547]" style={{ opacity: dark * 0.45, transition: `opacity ${HOUR_MS}ms ease-in-out` }} aria-hidden />
           <div className="relative w-full" style={{ aspectRatio: `${MAP_WIDTH} / ${MAP_HEIGHT}` }}>
-            <svg viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} className="absolute inset-0 h-full w-full rounded-b-md" aria-hidden="true" key={runId ?? "calm"}>
+            <svg viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} className="absolute inset-0 h-full w-full rounded-b-md" aria-hidden="true">
               <Scene />
-              <Glows lit={lit} />
-              <Tags lit={lit} />
+              <Night dark={dark} />
+              <g key={runId ?? "calm"}>
+                <Glows lit={lit} />
+                <Tags lit={lit} />
+              </g>
             </svg>
 
-            {residents.map((resident, index) => {
-              const home = HOMES[resident.id];
+            {residents.map((resident) => {
+              const leg = legs[resident.id] ?? { point: HOME_PINS[resident.id], ms: 0, walking: false };
               const result = results?.find((r) => r.id === resident.id) ?? null;
               const verdict = result?.verdict ?? null;
               const diary = diaries[resident.id];
               const reaction = diary?.status === "arrived" ? diary.line.reaction : null;
-              const xPct = (home.pin.x / MAP_WIDTH) * 100;
+              const xPct = (leg.point.x / MAP_WIDTH) * 100;
               const align = xPct > 78 ? "right-0" : xPct < 22 ? "left-0" : "left-1/2 -translate-x-1/2";
               const label = `${resident.name}: ${verdict ? VERDICT_LABELS[verdict] : "no policy yet"}${reaction ? `. "${reaction}"` : ""}. Show their card.`;
               return (
                 <div
                   key={resident.id}
                   className="group absolute -translate-x-1/2 -translate-y-full"
-                  style={{ left: pct(home.pin.x, MAP_WIDTH), top: pct(home.pin.y, MAP_HEIGHT), zIndex: popped.includes(resident.id) ? 30 + popped.indexOf(resident.id) : 10 + index }}
+                  style={{
+                    left: pct(leg.point.x, MAP_WIDTH),
+                    top: pct(leg.point.y, MAP_HEIGHT),
+                    transition: leg.ms ? `left ${leg.ms}ms linear, top ${leg.ms}ms linear` : undefined,
+                    // Nearer the bottom stands in front; a fresh reaction comes to the very front.
+                    zIndex: popped.includes(resident.id) ? 100 + popped.indexOf(resident.id) : 10 + Math.round(leg.point.y / 10),
+                  }}
                 >
                   {reaction && (
                     <span
@@ -404,10 +514,11 @@ export function TownMap({ residents, results, levers, runId, diaries, faces, onS
                       verdict === "unaffected" ? "opacity-75" : ""
                     }`}
                   >
-                    {verdict && verdict !== "unaffected" && (
+                    {/* They react once they get there. */}
+                    {verdict && verdict !== "unaffected" && !leg.walking && (
                       <span key={`ping-${runId}`} className={`impact-ping absolute top-0 h-[46px] w-[46px] rounded-full ${VERDICT_STYLES[verdict].band}`} aria-hidden />
                     )}
-                    <span className="relative rounded-full bg-white p-0.5 shadow-sm">
+                    <span className={`relative rounded-full bg-white p-0.5 shadow-sm ${leg.walking ? "walk-bob" : ""}`}>
                       <ResidentAvatar id={resident.id} expression={faces[resident.id] ?? "neutral"} size={42} ringClass={verdict ? VERDICT_STYLES[verdict].ring : "stroke-ink/25"} />
                     </span>
                     <span className="-mt-px h-0 w-0 border-x-[6px] border-t-[8px] border-x-transparent border-t-white drop-shadow-sm" aria-hidden />

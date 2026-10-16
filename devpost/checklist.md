@@ -119,7 +119,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Under fares, drag the slider until Nurul flips, then reset.
   Commit: `Add what-if sliders and tipping points`
 
-- [ ] **12. A living town**
+- [x] **12. A living town**
   Becomes usable: Residents move between home and their usual places, and the train, bus and daylight change. When a policy lands, each affected resident goes to the place that matters to them and reacts there, while everyone else carries on. Reduced motion keeps everyone still at home.
   Why now: This is the "crazy interface" heart of the upgrade, and the riskiest visual work, so it comes before the features that build on the map.
   PRD ref: `prd.md > Living Town`, `prd.md > Town Map`

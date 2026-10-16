@@ -58,7 +58,7 @@ export const HOMES: Record<string, { label: string; box: Box; pin: { x: number; 
 };
 
 // Where each kind of spending happens in town.
-const TARGET_LANDMARKS: Record<Lever["target"], Landmark[]> = {
+export const TARGET_LANDMARKS: Record<Lever["target"], Landmark[]> = {
   housing: ["homes"],
   food: ["hawker", "mart"],
   public_transport: ["mrt", "bus"],
