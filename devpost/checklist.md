@@ -99,12 +99,73 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Rehearse the demo in production mode with the map and say what you'd change.
   Commit: `Polish the impact moment and refresh the docs`
 
+- [ ] **10. Average vs. the people**
+  Becomes usable: After a run, a strip sets the average resident, a faceless grey character with the town's mean change and its verdict, beside the 8 real faces, with a sentence naming who the average hides.
+  Why now: A quick win, and the clearest statement of the kernel ("averages hide people"), so it comes first.
+  PRD ref: `prd.md > Average vs. the People`
+  Spec ref: `spec.md > Components` (Second upgrade: AverageStrip)
+  Build: Add `lib/average.ts` (mean resident, verdict via the engine, the hidden-people sentence) with `tests/average.test.ts`, and `components/AverageStrip.tsx` between the status line and the map.
+  Verify (mechanical): `npm test` passes, including fares (barely affected at −$28) and petrol (feels it at −$60) with their sentences; `npm run build` passes; in the browser the strip appears after a run, is hidden before one, and nothing scrolls sideways at 375 px.
+  Learner check: Tap fares, then petrol, and read what the average says against what the faces show.
+  Commit: `Show the average resident against the real ones`
+
+- [ ] **11. What-if sliders and tipping points**
+  Becomes usable: After a run, each change gets a slider; dragging it re-runs the town instantly, with a "what-if" tag and a reset. Cards show each person's tipping point for single-change policies. "Write new diaries" refreshes the diaries on request.
+  Why now: It turns watching into exploring and shows the verdict thresholds at work, all in tested, deterministic code.
+  PRD ref: `prd.md > What-if Sliders and Tipping Points`
+  Spec ref: `spec.md > Components` (Second upgrade: WhatIf)
+  Build: Add `lib/whatIf.ts` (scaled levers, slider ranges, tipping points) with `tests/whatIf.test.ts`, the controller's what-if state, `components/WhatIf.tsx`, tipping-point lines on the cards, and the "Write new diaries" action.
+  Verify (mechanical): `npm test` passes, including Nurul and Mdm Lim tipping at +22% under fares and slider values matching the engine; `npm run build` passes; in the browser dragging the slider updates cards, chart, map and faces with no network call, and reset restores the policy.
+  Learner check: Under fares, drag the slider until Nurul flips, then reset.
+  Commit: `Add what-if sliders and tipping points`
+
+- [ ] **12. A living town**
+  Becomes usable: Residents move between home and their usual places, and the train, bus and daylight change. When a policy lands, each affected resident goes to the place that matters to them and reacts there, while everyone else carries on. Reduced motion keeps everyone still at home.
+  Why now: This is the "crazy interface" heart of the upgrade, and the riskiest visual work, so it comes before the features that build on the map.
+  PRD ref: `prd.md > Living Town`, `prd.md > Town Map`
+  Spec ref: `spec.md > Components` (Second upgrade: living town), `spec.md > Look and Feel`
+  Build: Add `lib/townLife.ts` (usual places, routes, each resident's spot for a policy, found lever by lever with the engine) with `tests/townLife.test.ts`. Extend `TownMap` with moving pins (CSS transitions), ambient SVG motion and a day-to-night tint, all off for reduced motion.
+  Verify (mechanical): `npm test` passes, including fares sending Chloe and Raju to the MRT and bus stop and petrol sending Faizal and Marcus to the petrol station; `npm run build` passes; in the browser pins move before a run and gather after one, pins still open cards, and nothing scrolls sideways at 375 px.
+  Learner check: Watch the town for a moment, then run fares and petrol and watch who goes where.
+  Commit: `Bring the town to life`
+
+- [ ] **13. Town chatter**
+  Becomes usable: After the diaries, residents talk to each other about the policy, in a streamed chatter feed and as speech bubbles on the map.
+  Why now: It builds on the living town and reuses the diary streaming pattern and guardrails.
+  PRD ref: `prd.md > Town Chatter`
+  Spec ref: `spec.md > Components` (Second upgrade: town chatter), `spec.md > External Services and Dependencies`
+  Build: Draft `prompts/town-chatter.md` for your approval. Add `lib/writeChatter.ts`, `app/api/chatter/route.ts` (one JSON line per remark, shape-checked), chatter state in the controller, the feed and map bubbles, and `evals/chatter.eval.ts`.
+  Verify (mechanical): `npm test` passes, including a test that the chatter input carries the card strings; one live run streams valid remarks, with its cost recorded; `npm run eval:chatter` passes on the presets; failures leave the page intact.
+  Learner check: Approve or edit the chatter prompt, then run two presets and read what the town says.
+  Commit: `Let the residents talk to each other`
+
+- [ ] **14. Add yourself**
+  Becomes usable: "Move into town" lets you enter your age, income, spending, housing, children and car, and build your character. You become resident #9 on the map, in the cards, chart, summary and diaries, and nothing is saved.
+  Why now: The personal hook comes once the town, map and chatter can take a ninth resident.
+  PRD ref: `prd.md > Add Yourself`
+  Spec ref: `spec.md > Components` (Second upgrade: MoveIn)
+  Build: Add `lib/yourself.ts` (answers → a validated resident) with `tests/yourself.test.ts`. Let the engine, summary, chart, map, diaries and chatter take a resident list. Add `components/MoveIn.tsx` with a character builder and a home spot on the map.
+  Verify (mechanical): `npm test` passes, including your card matching the engine for every preset; `npm run build` passes; in the browser you appear, the summary counts 9, and refresh removes you.
+  Learner check: Move in as yourself and run the four presets.
+  Commit: `Let visitors move into town`
+
+- [ ] **15. Guided intro**
+  Becomes usable: A first-visit scroll story: meet the town, averages hide people, watch a fare rise land, Raju vs. Nurul, your turn. It can be skipped and replayed, and it makes no AI calls.
+  Why now: It narrates everything above, so it comes last.
+  PRD ref: `prd.md > Guided Intro`
+  Spec ref: `spec.md > Components` (Second upgrade: GuidedIntro)
+  Build: Add `components/GuidedIntro.tsx` (scroll-driven steps using the presets and the engine), a skip control, a "Replay intro" link, and still steps for reduced motion. Refresh the README and app map.
+  Verify (mechanical): `npm test` and `npm run build` pass; in the browser the intro plays, skip works at every step, it makes no network calls, and it stays still with reduced motion; the production demo runs end to end.
+  Learner check: Watch the intro as a first-time visitor would, then skip it on a second visit.
+  Commit: `Add a guided intro`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 2: all 4 presets with cards, bars, chart and panel; approve the 8 everyday lines and the look before diaries and the parser build on them. Learner: "Looks good to me. Keep the everyday lines as they are."
 - [x] Final kick-the-tires exploration and feedback completed — after slice 6, in production mode. Learner: "I tried it in production mode: the demo, awkward inputs and phone width all work."
 - [x] Upgrade explored — after slice 8: the characters and the town map, before the polish slice. Learner: "The map and characters look great. No changes, go ahead with the polish slice."
-- [ ] Final kick-the-tires after the upgrade — after slice 9, in production mode
+- [ ] Living town explored — after slice 12, before chatter and the rest
+- [ ] Final kick-the-tires after the upgrade — after slice 15, in production mode, before the Oct 24 feature freeze
 
 ## Final Review
 
@@ -139,3 +200,4 @@ Activity mode: Prior practice connected (focused alternative), plus the app map.
 - The diary eval's amount check allows amounts quoted from the policy text — diaries quoted "$300" and "under $3,000" from the policy itself, which is accurate (learner's decision).
 - The diary input now gives each affected resident's spare money after, from the engine, and the eval allows it — the model was computing totals itself (Nurul: "from $500 to $900"); now every number a diary states comes from tested code (learner's decision). After these three: parser 10/10 (3 runs each), diaries 8/8.
 - Slices 7–9 added after the final review, at the learner's request ("build it crazy"): illustrated characters whose faces react and a town map that reacts to each policy. This was the scope's own Later item "Town reacting loading animation". `scope.md`, `prd.md` (new `Town Map` section) and `spec.md` (`ResidentAvatar`, `TownMap`) were updated with the learner's agreement. Presentation only: the numbers, tests and evals don't change.
+- The upgrade's final review moved from after slice 9 to after slice 15. At the planned review, the learner asked for more ("we have to improve the interface by a lot"), so slices 10–15 were added: average vs. the people, what-if sliders, a living town, town chatter, add yourself, and a guided intro. Feature freeze is Oct 24. `scope.md`, `prd.md` and `spec.md` were updated with the learner's agreement.

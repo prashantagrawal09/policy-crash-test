@@ -210,6 +210,13 @@ PRD ref: `prd.md > The Core Journey`, `prd.md > States and Boundaries`.
 - **`Disclaimer`:** a slim footer pinned to the bottom. Implements `prd.md > Disclaimer`.
 - **`ResidentAvatar`:** each resident drawn in inline SVG from shared parts (head, face, outfit, hair, props), with an `expression` prop: neutral, happy, relieved, worried or stressed. `lib/expressions.ts` picks the expression: the diary's mood once it lands, otherwise the verdict's (better off → happy, barely affected or unaffected → neutral, feels it → worried, hard hit → stressed). Used on the cards, the chart rows and the map pins. Implements `prd.md > Look and Feel` (avatars).
 - **`TownMap`:** an inline SVG neighbourhood with landmarks and each resident's home. `lib/townMap.ts` (pure) says which landmarks a policy's levers light up (by lever target) and who gets coins (one-off payments, from the engine results). Pins are buttons: verdict-coloured ring, impact pulse, reaction bubble as diaries land, and selecting one scrolls to the card. Implements `prd.md > Town Map`.
+- **Second upgrade** (each piece is pure logic in `lib/` with tests, drawn by a component):
+  - **`AverageStrip`** with `lib/average.ts`: the town's mean resident, judged by the engine's `verdict`, and the sentence naming who it hides. Implements `prd.md > Average vs. the People`.
+  - **`WhatIf`** with `lib/whatIf.ts`: replaces lever values and re-runs the engine in the browser; tipping points come from searching values in whole steps. Diaries are re-requested only on demand. Implements `prd.md > What-if Sliders and Tipping Points`.
+  - **Living town** in `TownMap` with `lib/townLife.ts`: each resident's usual place, the spot they go to when a policy lands (the lit place behind the change that costs them most, found by running the engine lever by lever), and CSS-transitioned positions. Ambient SVG motion (train, bus, light) is off for reduced motion. Implements `prd.md > Living Town`.
+  - **Town chatter:** `POST /api/chatter` with `lib/writeChatter.ts` and `prompts/town-chatter.md` (approved by you), streamed as one JSON line per remark (speaker, listener, text), and checked by `evals/chatter.eval.ts`. Implements `prd.md > Town Chatter`.
+  - **`MoveIn`** form with `lib/yourself.ts`: builds a resident from your answers; the engine, cards, map and diaries take a 9th resident. Implements `prd.md > Add Yourself`.
+  - **`GuidedIntro`**: a scroll story using the presets and the engine only. Implements `prd.md > Guided Intro`.
 
 ### Tests
 Vitest. Run them with `npm test`; they work offline and need no key.
@@ -342,7 +349,8 @@ Policy Crash Tester/              # repository root
 │       └── childcare-half.json
 ├── prompts/
 │   ├── parse-policy.md           # your parser prompt
-│   └── write-diaries.md          # your diary prompt
+│   ├── write-diaries.md          # your diary prompt
+│   └── town-chatter.md           # your chatter prompt (second upgrade)
 ├── tests/
 │   ├── engine.test.ts
 │   ├── presets.test.ts           # prd.md > Expected Preset Results

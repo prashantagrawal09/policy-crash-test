@@ -73,6 +73,54 @@ An illustrated neighbourhood between the summary and the chart: the residents' h
 - [ ] On a phone the map can be panned sideways inside its frame, and nothing else on the page scrolls sideways.
 - [ ] With reduced motion, nothing pulses or floats.
 
+### Average vs. the People
+Source: `scope.md > The Unique Kernel` ("averages hide people").
+- After a run, a strip between the summary and the map sets **the average resident**, a faceless grey character, beside the 8 real faces. It shows that resident's monthly change and the verdict that average would get, then one sentence naming who the average hides.
+- The average resident's numbers are the town's means (monthly change, one-off, income and spare money), judged by the same verdict rules.
+- If nobody is affected, the strip doesn't show.
+
+- [ ] Fares: the average resident is barely affected at −$28 a month. "But Chloe and Uncle Raju feel it, and Faizal and Marcus aren't touched at all."
+- [ ] Petrol: the average resident feels it at −$60 a month. "But Faizal is hit hard, and 6 people aren't touched at all."
+
+### What-if Sliders and Tipping Points
+- After a run, each change in the policy gets a slider that starts at the policy's value. Moving it re-runs the engine instantly: cards, chart, map, faces and summary all update. Diaries only rewrite when "Write new diaries" is pressed, to keep cost down.
+- A "what-if" tag says what moved ("Fares +35%, the policy said +20%"), and "Back to the policy" resets it.
+- For a policy with a single monthly change, each card shows its **tipping point**: the value at which that person's verdict would change ("Feels it from +22%").
+- Tipping points come from the engine, searched in whole steps (1% or $1), so they're exact for the values a slider can reach.
+
+- [ ] Moving the fares slider changes card numbers to match the engine at the new value.
+- [ ] Under fares, Nurul and Mdm Lim show they'd feel it from +22%.
+
+### Living Town
+- The residents move around town: each one goes back and forth between home and their usual place (Chloe to the university, Mdm Lim to her stall, Raju to the polyclinic, and so on). The train and bus run, and the light shifts from day to night.
+- When a policy lands, each resident it touches walks to the place that matters most to them (fares: the MRT or bus stop; petrol: the petrol station) and reacts there. Everyone else carries on with their day.
+- With reduced motion, everyone stays at home and nothing moves.
+
+- [ ] Before any run, residents move between home and their usual place.
+- [ ] Under fares, Chloe and Uncle Raju gather at the MRT and bus stop; under petrol, Faizal and Marcus go to the petrol station.
+- [ ] With reduced motion, nobody moves.
+
+### Town Chatter
+- After the diaries, the residents talk to each other about the policy: a short exchange of 4–6 lines, streamed into a chatter feed and shown as speech bubbles between them on the map.
+- It's written by Claude Sonnet 5.5 from each person's exact card strings and the policy, using a chatter prompt you approve. The same rules as the diaries apply: amounts only from the cards or the policy, no politics, no real people.
+- If chatter fails, the rest of the page is unaffected.
+
+- [ ] For each preset, chatter arrives, and its amounts all appear in the speakers' card strings or the policy (checked by the eval).
+
+### Add Yourself
+- "Move into town" opens a short form: name (default "You"), age, monthly income, monthly spending in a few grouped categories (or a starting template), housing, children and car. You also build a character (skin, hair, outfit, prop).
+- You become resident #9, with a home on the map, a card, a place in the chart and summary, and a diary. Nothing is saved, and refreshing removes you.
+- Only what you enter is used; it goes to Claude only for your diary.
+
+- [ ] With you added, your card's numbers match the engine for every preset, and the summary counts 9.
+
+### Guided Intro
+- On first visit, a short scrolling story plays before the free-play page. It moves through: meet the town, the average hides people, watch a fare rise land (numbers only, no AI calls), Raju vs. Nurul, then "your turn".
+- It can be skipped, and replayed from the header.
+- With reduced motion, the story shows as still steps.
+
+- [ ] The intro can be skipped at any point and never blocks the app.
+
 ### Monthly Change Chart
 - One bar per resident, in card order, showing each person's monthly change from a zero line: losses one way, gains the other.
 - Bars use the verdict colours, so a short amber bar (Raju, −$12) sits beside a longer grey one (Nurul, −$40).
@@ -179,6 +227,7 @@ Computed from the rules above, using the same check that shaped the demo.
 - The verdict rules and the spare-money bar, with card numbers that match the engine exactly.
 - Diaries for all 8, arriving after the numbers, with one retry for the town.
 - Illustrated characters whose faces react, and the town map (an upgrade agreed after the build).
+- Average vs. the people, what-if sliders with tipping points, a living town, town chatter, adding yourself, and a guided intro (second upgrade, feature freeze Oct 24).
 - The waiting, failure and empty states under **States and Boundaries**.
 
 ## Deferred From the POC
@@ -186,7 +235,6 @@ Computed from the rules above, using the same check that shaped the demo.
 
 ## Possible Later Enhancements
 - Compare two policies side by side.
-- "Citizen like me": add your own resident.
 
 ## Non-Goals
 - **Login or accounts:** one session is the whole experience.
