@@ -1,5 +1,7 @@
+import { useEffect, useRef } from "react";
 import { spareMoney, type ResidentResult } from "@/lib/engine";
-import { cardText, incomeText, money } from "@/lib/format";
+import { cardText, incomeText, money, signedMoney } from "@/lib/format";
+import { useCountUp } from "@/lib/useCountUp";
 import type { Resident } from "@/lib/schemas";
 import type { Expression } from "@/lib/expressions";
 import type { DiaryState } from "@/lib/useCrashTest";
@@ -14,18 +16,47 @@ interface Props {
   diary: DiaryState | null; // null before any run
   expression: Expression; // the character's face (lib/expressions.ts)
   waiting: boolean; // a typed policy is being read: the card shimmers in place
+  runId: number | null; // a new run jolts the cards it hits
+}
+
+// The big change number counts up to its value; screen readers get the exact final text.
+function BigNumber({ amount, suffix, finalText }: { amount: number; suffix: string; finalText: string }) {
+  const shown = useCountUp(amount);
+  return (
+    <>
+      <span aria-hidden>
+        {signedMoney(shown)}
+        {suffix}
+      </span>
+      <span className="sr-only">{finalText}</span>
+    </>
+  );
 }
 
 // One resident's card, before and after a run (prd.md > Resident Cards): who they are, what the
 // policy does to their money, then how it feels. Cards never move; only contents and colour change.
-export function ResidentCard({ resident, result, diary, expression, waiting }: Props) {
+export function ResidentCard({ resident, result, diary, expression, waiting, runId }: Props) {
   const verdict = result?.verdict ?? null;
   const style = verdict ? VERDICT_STYLES[verdict] : null;
   const text = result ? cardText(result) : null;
   const showChange = text !== null && verdict !== "unaffected";
 
+  // The crash-test moment: a card the policy hits gives a small jolt when the run lands.
+  const card = useRef<HTMLElement>(null);
+  const hit = verdict !== null && verdict !== "unaffected";
+  useEffect(() => {
+    const element = card.current;
+    if (!element || runId === null || !hit) return;
+    element.classList.remove("impact-jolt");
+    void element.offsetWidth; // restart the jolt
+    element.classList.add("impact-jolt");
+    const done = window.setTimeout(() => element.classList.remove("impact-jolt"), 500);
+    return () => window.clearTimeout(done);
+  }, [runId, hit]);
+
   return (
     <article
+      ref={card}
       id={`card-${resident.id}`}
       tabIndex={-1}
       aria-label={resident.name}
@@ -61,7 +92,11 @@ export function ResidentCard({ resident, result, diary, expression, waiting }: P
           {showChange && text ? (
             <div className="tabular-nums">
               <p className={`text-4xl font-extrabold tracking-tight ${text.bigIsGain ? "text-better" : "text-hard"}`}>
-                {text.bigNumber}
+                <BigNumber
+                  amount={result && text.bigPerMonth ? result.monthlyChange : (result?.oneOff ?? 0)}
+                  suffix={text.bigPerMonth ? "" : " one-off"}
+                  finalText={text.bigNumber ?? ""}
+                />
                 {text.bigPerMonth && (
                   <span className="whitespace-nowrap text-base font-semibold tracking-normal text-ink/55"> a month</span>
                 )}

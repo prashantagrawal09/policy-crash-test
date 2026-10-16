@@ -75,6 +75,7 @@ export default function Home() {
         residentCount={RESIDENTS.length}
         failedDiaries={crash.failedDiaries}
         onRetryDiaries={crash.retryDiaries}
+        runId={crash.run?.runId ?? null}
       />
 
       <TownMap
@@ -103,6 +104,7 @@ export default function Home() {
             diary={crash.run ? (crash.diaries[resident.id] ?? null) : null}
             expression={faces[resident.id]}
             waiting={crash.phase === "reading"}
+            runId={crash.run?.runId ?? null}
           />
         ))}
       </section>

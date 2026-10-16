@@ -9,15 +9,17 @@ interface Props {
   residentCount: number;
   failedDiaries: number;
   onRetryDiaries: () => void;
+  runId: number | null;
 }
 
 // The waiting steps, then the one-line town summary (prd.md > Town Summary). Announced to screen readers.
-export function StatusLine({ phase, results, residentCount, failedDiaries, onRetryDiaries }: Props) {
+export function StatusLine({ phase, results, residentCount, failedDiaries, onRetryDiaries, runId }: Props) {
   const allUnaffected = results !== null && results.every((r) => r.verdict === "unaffected");
   const headline = "font-display text-3xl font-black leading-tight font-stretch-condensed sm:text-4xl";
 
   return (
-    <section aria-live="polite" className="mt-12 border-t-2 border-ink pt-5">
+    <section aria-live="polite" className="relative mt-12 border-t-2 border-ink pt-5">
+      {runId !== null && <span key={runId} className="impact-sweep hazard-stripes absolute inset-x-0 -top-[5px] h-2" aria-hidden />}
       {phase === "reading" ? (
         <p className={`flex items-center gap-3 ${headline}`}>
           <span className="h-3 w-3 animate-pulse rounded-full bg-hazard ring-2 ring-ink motion-reduce:animate-none" aria-hidden />

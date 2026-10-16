@@ -14,7 +14,7 @@ import { VERDICT_STYLES } from "./verdictStyles";
 // resident's pin takes their verdict colour, coins drop on one-off recipients, and reactions pop
 // up as diaries land. The scene is SVG; the pins are HTML buttons laid over it.
 
-const BUBBLE_MS = 4000;
+const BUBBLE_MS = 3000;
 const ARROWS: Record<Direction, string> = { up: "▲", down: "▼", mixed: "▲▼" };
 
 interface Props {
@@ -382,7 +382,7 @@ export function TownMap({ residents, results, levers, runId, diaries, faces, onS
                 >
                   {reaction && (
                     <span
-                      className={`pointer-events-none absolute bottom-full mb-1.5 w-[168px] rounded-lg border border-ink/20 bg-diary px-2.5 py-1.5 font-diary text-[12.5px] italic leading-snug text-ink shadow-sm transition-opacity duration-200 ${align} ${
+                      className={`pointer-events-none absolute bottom-full mb-1.5 w-[150px] rounded-lg border border-ink/20 bg-diary px-2.5 py-1.5 font-diary text-[12.5px] italic leading-snug text-ink shadow-sm transition-opacity duration-200 ${align} ${
                         popped.includes(resident.id) ? "bubble-pop opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
                       }`}
                     >

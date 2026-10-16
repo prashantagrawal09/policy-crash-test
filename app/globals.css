@@ -148,3 +148,29 @@ body {
   animation: card-flash 1.6s ease-out;
   @media (prefers-reduced-motion: reduce) { animation: none; outline: 3px solid var(--hazard); }
 }
+
+/* The impact moment when a policy lands; off for people who prefer reduced motion. */
+@keyframes impact-sweep {
+  0% { transform: scaleX(0); opacity: 1; }
+  30% { transform: scaleX(1); opacity: 1; }
+  75% { opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; }
+}
+
+@keyframes impact-jolt {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px) rotate(-0.4deg); }
+  45% { transform: translateX(3px) rotate(0.3deg); }
+  70% { transform: translateX(-1.5px); }
+}
+
+@utility impact-sweep {
+  transform-origin: left;
+  animation: impact-sweep 1.2s ease-out both;
+  @media (prefers-reduced-motion: reduce) { display: none; }
+}
+
+@utility impact-jolt {
+  animation: impact-jolt 420ms ease-out;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}

@@ -24,6 +24,15 @@ The AI does only the two things it's good at: reading messy text and writing in 
 - **The engine** (`lib/engine.ts`) is plain TypeScript working in whole cents. It applies the levers to each resident's budget and gives the verdict: Better off, Barely affected, Feels it, Hard hit, or Unaffected. The same file runs in the browser and on the server.
 - **Diaries** come from Claude Sonnet 5.5 and stream into the cards one by one. The writer gets each resident's exact card numbers, and the server re-runs the engine rather than trusting the browser.
 
+- **The town map and characters** make the spread visible at a glance. Each resident is an illustrated character standing on their home in a little neighbourhood. When a policy lands:
+  - the places it touches light up (fares light the MRT and bus stop, petrol the petrol station);
+  - every pin takes its verdict colour;
+  - coins drop on whoever gets a one-off;
+  - reactions pop up as the diaries arrive;
+  - faces change to match: calm, smiling, relieved, worried or stressed.
+
+  The map shows no numbers of its own, so it can never disagree with a card.
+
 Nothing is saved; refreshing the page puts the town back to normal.
 
 ## Run it locally
@@ -46,10 +55,11 @@ npm run dev                    # http://localhost:3000
 npm test
 ```
 
-86 Vitest tests cover:
+98 Vitest tests cover:
 - the engine: eligibility, every lever kind, and the verdict lines exactly at −1%, −5%, −10% and −30%;
 - every card in `devpost/prd.md > Expected Preset Results`;
 - the display rounding (percentages round toward zero, so Nurul's 0.95% shows as "0.9%");
+- the map's rules (which places each kind of change lights up, and who gets coins) and the faces each verdict shows;
 - that every example in the parser prompt is valid against the lever schema.
 
 **Live evals** use your key and test the AI's output, not just the code:
@@ -70,9 +80,9 @@ npm run build && npm start     # production mode: faster, no dev overlay
 ```
 
 Open http://localhost:3000 at desktop width. Then:
-1. Tap "Bus and train fares rise 20%": Chloe and Uncle Raju feel it.
-2. Tap "Petrol prices rise 15%": the town flips, and Faizal is hard hit.
-3. Type your own policy.
+1. Tap "Bus and train fares rise 20%": the MRT and bus stop light up, and Chloe and Uncle Raju turn worried.
+2. Tap "Petrol prices rise 15%": the town flips. The petrol station lights up, and Faizal is hard hit.
+3. Type your own policy, and click a pin on the map to jump to that person's card.
 
 ## Cost
 
@@ -89,8 +99,8 @@ So a crash test costs about 1–2 cents. The first diary arrives in about 2 seco
 
 ```
 app/            the page, layout and styles, and the two API routes (parse, diaries)
-components/     input, status line, chart, policy panel, resident card, spare-money bar, diary note
-lib/            schemas, engine, formatting, presets, diary input, the two AI calls, the run controller
+components/     input, status line, town map, illustrated characters, chart, policy panel, resident card, spare-money bar, diary note
+lib/            schemas, engine, formatting, presets, diary input, the two AI calls, the run controller, the map's rules, faces, count-up
 data/           the 8 residents and the 4 preset lever files
 prompts/        the parser and diary prompts the routes load
 tests/          offline Vitest tests
