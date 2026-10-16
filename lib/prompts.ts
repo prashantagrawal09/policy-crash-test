@@ -3,7 +3,7 @@ import path from "node:path";
 
 // Server only: reads your runtime prompts from prompts/*.md. Cached in production;
 // re-read on every call in development, so prompt edits apply without a restart.
-export type PromptName = "parse-policy" | "write-diaries";
+export type PromptName = "parse-policy" | "write-diaries" | "town-chatter";
 
 const cache = new Map<PromptName, Promise<string>>();
 

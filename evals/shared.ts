@@ -21,3 +21,21 @@ export function pad(text: string, width: number): string {
 }
 
 export const dollars = (amount: number) => `$${amount.toFixed(4)}`;
+
+// Writing stays on everyday life and money, not politics (diary rule 7, chatter rule 7).
+export const POLITICS = [
+  /\belections?\b/i,
+  /\bvot(e|es|ed|ing)\b/i,
+  /\bministers?\b/i,
+  /\bparliament\b/i,
+  /\bpolitic(s|al|ian|ians)\b/i,
+  /\bopposition\b/i,
+  /\bruling party\b/i,
+  /\bPAP\b/,
+  /\bWorkers'? Party\b/i,
+];
+
+export const AMOUNT = /\$\s?(\d+(?:,\d{3})*(?:\.\d+)?)/g;
+export const amounts = (text: string) => [...text.matchAll(AMOUNT)].map((m) => Number(m[1].replace(/,/g, "")));
+export const sentences = (text: string) => text.trim().split(/(?<=[.!?])\s+(?=["“'‘(]?[A-Z0-9$])/).filter(Boolean);
+export const wordCount = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;

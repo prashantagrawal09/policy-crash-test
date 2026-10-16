@@ -12,7 +12,7 @@ import { runTown, type Verdict } from "@/lib/engine";
 import { PRESETS } from "@/lib/presets";
 import type { DiaryLine } from "@/lib/schemas";
 import { writeDiaries } from "@/lib/writeDiaries";
-import { dollars, mark, pad, pool } from "./shared";
+import { AMOUNT, amounts, dollars, mark, pad, POLITICS, pool, sentences, wordCount } from "./shared";
 
 const RUNS = 2;
 const PRICES = { input: 2, output: 10 }; // claude-sonnet-5-5, $ per million tokens
@@ -26,25 +26,6 @@ const MOODS_FOR: Record<Verdict, DiaryLine["mood"][]> = {
   feels_it: ["worried"],
   hard_hit: ["stressed"],
 };
-
-// Diaries stay on everyday life and money, not politics (prompt rule 7).
-const POLITICS = [
-  /\belections?\b/i,
-  /\bvot(e|es|ed|ing)\b/i,
-  /\bministers?\b/i,
-  /\bparliament\b/i,
-  /\bpolitic(s|al|ian|ians)\b/i,
-  /\bopposition\b/i,
-  /\bruling party\b/i,
-  /\bPAP\b/,
-  /\bWorkers'? Party\b/i,
-];
-
-const AMOUNT = /\$\s?(\d+(?:,\d{3})*(?:\.\d+)?)/g;
-const amounts = (text: string) => [...text.matchAll(AMOUNT)].map((m) => Number(m[1].replace(/,/g, "")));
-const sentences = (text: string) => text.trim().split(/(?<=[.!?])\s+(?=["“'‘(]?[A-Z0-9$])/).filter(Boolean);
-const sentenceCount = (text: string) => sentences(text).length;
-const wordCount = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
 
 interface RunReport {
   preset: string;
@@ -101,7 +82,7 @@ async function evalRun(presetIndex: number, run: number): Promise<RunReport> {
       problems.push(`${resident.id}: ${invented.map((m) => m[0]).join(", ")} not among the given numbers [${[...given].map((a) => `$${a}`).join(", ")}] in ${[...new Set(quotes)].join(" ")}`);
     }
     const words = wordCount(diary.reaction);
-    const sentenceTotal = sentenceCount(diary.diary);
+    const sentenceTotal = sentences(diary.diary).length;
     if (words > 12 || sentenceTotal < 2 || sentenceTotal > 4) {
       checks.lengths = false;
       problems.push(`${resident.id}: reaction ${words} words, diary ${sentenceTotal} sentences`);

@@ -404,11 +404,11 @@ The skill-pack files (`.agents/`, `.claude/`, `agent/`, `skills-lock.json`) and 
   - Check `stop_reason` for `"refusal"` before reading content. Haiku 5.5 has no server-side fallback.
 - **Errors**, checked most specific first: `RateLimitError`, then `APIConnectionError` (which includes timeouts), then `APIError`. All of them map to the PRD's friendly messages, and the details go to the server log.
 - **Cost** (first-party prices per million tokens): Haiku 5.5 is $0.10 in and $0.50 out; Sonnet 5.5 is $2 in and $10 out.
-  - Estimates: a typed-policy parse is about 1.5K tokens in and 0.5K out, roughly $0.0004. Measured in `5-build`: about 2.2K in and 0.1K out, $0.0003 per parse. A diary run is about 2K in and 1.5K out, roughly $0.02. Measured in `5-build`: about 1.7–1.8K in and 0.9–1.0K out, $0.013 per full diary run.
+  - Estimates: a typed-policy parse is about 1.5K tokens in and 0.5K out, roughly $0.0004. Measured in `5-build`: about 2.2K in and 0.1K out, $0.0003 per parse. A diary run is about 2K in and 1.5K out, roughly $0.02. Measured in `5-build`: about 1.7–1.8K in and 0.9–1.0K out, $0.013 per full diary run. Town chatter (second upgrade), measured in `5-build`: about 1.9–2.0K in and 0.3–0.4K out, $0.007 per run.
   - So a crash test costs about 2 cents, presets included (they skip the parse). A hundred runs while building and recording is about $2.
-  - The parser eval is about $0.01 and the diary eval about $0.16.
+  - The parser eval is about $0.01, the diary eval about $0.16 and the chatter eval about $0.06.
   - `5-build` measures the real cost of one run before running anything in bulk.
-- **Rate limits:** depend on your account tier. The app sends at most 2 requests per run. https://platform.claude.com/docs/en/api/rate-limits
+- **Rate limits:** depend on your account tier. The app sends at most 3 requests per run (parse, diaries, chatter). https://platform.claude.com/docs/en/api/rate-limits
 - **Docs:**
   - Structured outputs: https://platform.claude.com/docs/en/build-with-claude/structured-outputs
   - Streaming: https://platform.claude.com/docs/en/build-with-claude/streaming

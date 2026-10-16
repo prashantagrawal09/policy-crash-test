@@ -67,6 +67,7 @@ npm test
 ```bash
 npm run eval:parser     # 10 fixture policies × 3 runs on Claude Haiku 5.5 (about $0.01)
 npm run eval:diaries    # 4 presets × 2 runs on Claude Sonnet 5.5 (about $0.11)
+npm run eval:chatter    # 4 presets × 2 runs on Claude Sonnet 5.5 (about $0.06)
 ```
 
 - **Parser eval:** a case passes only if all 3 runs agree with the expected reading. One case is a sign check: "Electricity bills cut 20%" must come back as utilities −20.
@@ -92,8 +93,9 @@ Measured during the build at first-party prices:
 |---|---|---|---|
 | Reading a typed policy | Claude Haiku 5.5 | about 2.2K / 0.1K | about $0.0003 |
 | Diaries for all 8 residents | Claude Sonnet 5.5 | about 1.7K / 0.9K | about $0.013 |
+| Town chatter | Claude Sonnet 5.5 | about 2.0K / 0.3K | about $0.007 |
 
-So a crash test costs about 1–2 cents. The first diary arrives in about 2 seconds and all 8 in about 9.
+So a crash test costs about 2 cents. The first diary arrives in about 2 seconds and all 8 in about 9.
 
 ## Project layout
 

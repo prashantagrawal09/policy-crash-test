@@ -129,7 +129,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Watch the town for a moment, then run fares and petrol and watch who goes where.
   Commit: `Bring the town to life`
 
-- [ ] **13. Town chatter**
+- [x] **13. Town chatter**
   Becomes usable: After the diaries, residents talk to each other about the policy, in a streamed chatter feed and as speech bubbles on the map.
   Why now: It builds on the living town and reuses the diary streaming pattern and guardrails.
   PRD ref: `prd.md > Town Chatter`
@@ -164,7 +164,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
 - [x] Early usable behavior explored — after slice 2: all 4 presets with cards, bars, chart and panel; approve the 8 everyday lines and the look before diaries and the parser build on them. Learner: "Looks good to me. Keep the everyday lines as they are."
 - [x] Final kick-the-tires exploration and feedback completed — after slice 6, in production mode. Learner: "I tried it in production mode: the demo, awkward inputs and phone width all work."
 - [x] Upgrade explored — after slice 8: the characters and the town map, before the polish slice. Learner: "The map and characters look great. No changes, go ahead with the polish slice."
-- [ ] Living town explored — after slice 12, before chatter and the rest
+- [x] Living town explored — after slice 12, before chatter and the rest
 - [ ] Final kick-the-tires after the upgrade — after slice 15, in production mode, before the Oct 24 feature freeze
 
 ## Final Review

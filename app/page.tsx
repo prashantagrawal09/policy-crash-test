@@ -6,10 +6,12 @@ import { PolicyInput } from "@/components/PolicyInput";
 import { PolicyPanel } from "@/components/PolicyPanel";
 import { ResidentCard } from "@/components/ResidentCard";
 import { StatusLine } from "@/components/StatusLine";
+import { TownChatter } from "@/components/TownChatter";
 import { TownMap } from "@/components/TownMap";
 import { RESIDENTS } from "@/data/residents";
 import { expressionFor } from "@/lib/expressions";
 import { PRESETS } from "@/lib/presets";
+import { useConversation } from "@/lib/useConversation";
 import { useCrashTest } from "@/lib/useCrashTest";
 import { tippingPoint } from "@/lib/whatIf";
 import { WhatIf } from "@/components/WhatIf";
@@ -28,13 +30,15 @@ function showCard(residentId: string) {
   window.setTimeout(() => card.classList.remove("card-flash"), 1700);
 }
 
-// The one page, in PRD order: header, policy input, status and summary, average vs. the people, town map, chart and panel, residents.
+// The one page, in PRD order: header, policy input, status and summary, average vs. the people, town map, town chatter, chart and panel, residents.
 export default function Home() {
   const crash = useCrashTest();
   // The town as it stands: the what-if sliders' values if moved, otherwise the policy as written.
   const results = crash.activeResults;
   const levers = crash.activeLevers;
   const exploring = crash.adjusted !== null;
+  // The town chatter, said one remark at a time on the map and in the feed.
+  const conversation = useConversation(crash.chatter.remarks, crash.run?.runId ?? null);
 
   // Each character's face: their diary's mood once it lands, otherwise their verdict's.
   const faces = Object.fromEntries(
@@ -107,8 +111,21 @@ export default function Home() {
         runId={crash.run?.runId ?? null}
         diaries={crash.run ? crash.diaries : {}}
         faces={faces}
+        speaking={conversation.speaking}
         onSelect={showCard}
       />
+
+      {crash.run && (
+        <TownChatter
+          residents={RESIDENTS}
+          status={crash.chatter.status}
+          received={crash.chatter.remarks.length}
+          spoken={conversation.spoken}
+          speaking={conversation.speaking}
+          faces={faces}
+          stale={exploring}
+        />
+      )}
 
       {crash.run && (
         <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">

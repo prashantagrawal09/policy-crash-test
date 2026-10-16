@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { ResidentResult } from "@/lib/engine";
 import type { Expression } from "@/lib/expressions";
 import { VERDICT_LABELS } from "@/lib/format";
-import type { Lever, Resident } from "@/lib/schemas";
+import type { ChatterLine, Lever, Resident } from "@/lib/schemas";
 import { clockLabel, darkness, gatherings, HOUR_MS, whereAt, type Point } from "@/lib/townLife";
 import { coinRecipients, directionLabel, HOMES, LANDMARKS, litLandmarks, MAP_HEIGHT, MAP_WIDTH, type Box, type Direction, type Landmark } from "@/lib/townMap";
 import type { DiaryState } from "@/lib/useCrashTest";
@@ -28,6 +28,7 @@ interface Props {
   runId: number | null;
   diaries: Record<string, DiaryState>;
   faces: Record<string, Expression>;
+  speaking: ChatterLine | null; // the remark of town chatter being said right now
   onSelect: (residentId: string) => void;
 }
 
@@ -333,8 +334,9 @@ function Tags({ lit }: { lit: Map<Landmark, Direction> }) {
         const text = `${landmark === "homes" ? "Housing costs" : directionLabel(landmark, direction)} ${ARROWS[direction]}`;
         const width = text.length * 6.4 + 14;
         const x = Math.min(Math.max(box.x + box.w / 2 - width / 2, 4), MAP_WIDTH - width - 4);
-        // Places below the road carry their tag inside, so the people gathered on top don't hide it.
-        const y = box.y >= 340 ? box.y + 48 : box.y - 22;
+        // Tags stay clear of the people gathered there: places below the road carry theirs inside,
+        // and the bus stop's sits higher, above the queue.
+        const y = box.y >= 340 ? box.y + 48 : landmark === "bus" ? box.y - 64 : box.y - 22;
         return (
           <g key={landmark} className="tag-pop">
             <rect x={x} y={y} width={width} height="18" rx="9" fill="#111111" />
@@ -398,9 +400,23 @@ function Night({ dark }: { dark: number }) {
   );
 }
 
+// Town chatter: a dashed line arcs from whoever is talking to whoever they're talking to.
+const HEAD = 30; // from a pin's tip up to roughly the middle of its face, in map units
+
+function TalkLine({ from, to }: { from: Point; to: Point }) {
+  const [x1, y1, x2, y2] = [from.x, from.y - HEAD, to.x, to.y - HEAD];
+  const lift = Math.max(Math.min(y1, y2) - 60, 12);
+  return (
+    <g aria-hidden>
+      <path d={`M${x1} ${y1} Q${(x1 + x2) / 2} ${lift} ${x2} ${y2}`} fill="none" stroke="#111111" strokeWidth="2.5" strokeDasharray="5 6" strokeLinecap="round" className="talk-line" />
+      <circle cx={x2} cy={y2} r="30" fill="none" stroke="#FFD400" strokeWidth="5" />
+    </g>
+  );
+}
+
 const HOME_PINS: Record<string, Point> = Object.fromEntries(Object.entries(HOMES).map(([id, home]) => [id, home.pin]));
 
-export function TownMap({ residents, results, levers, runId, diaries, faces, onSelect }: Props) {
+export function TownMap({ residents, results, levers, runId, diaries, faces, speaking, onSelect }: Props) {
   const lit = levers ? litLandmarks(levers) : new Map<Landmark, Direction>();
   const coins = new Set(results ? coinRecipients(results) : []);
 
@@ -467,6 +483,9 @@ export function TownMap({ residents, results, levers, runId, diaries, faces, onS
                 <Glows lit={lit} />
                 <Tags lit={lit} />
               </g>
+              {speaking && legs[speaking.speaker] && legs[speaking.listener] && (
+                <TalkLine key={`${speaking.speaker}-${speaking.text}`} from={legs[speaking.speaker].point} to={legs[speaking.listener].point} />
+              )}
             </svg>
 
             {residents.map((resident) => {
@@ -475,6 +494,7 @@ export function TownMap({ residents, results, levers, runId, diaries, faces, onS
               const verdict = result?.verdict ?? null;
               const diary = diaries[resident.id];
               const reaction = diary?.status === "arrived" ? diary.line.reaction : null;
+              const talking = speaking?.speaker === resident.id ? speaking : null;
               const xPct = (leg.point.x / MAP_WIDTH) * 100;
               const align = xPct > 78 ? "right-0" : xPct < 22 ? "left-0" : "left-1/2 -translate-x-1/2";
               const label = `${resident.name}: ${verdict ? VERDICT_LABELS[verdict] : "no policy yet"}${reaction ? `. "${reaction}"` : ""}. Show their card.`;
@@ -486,11 +506,25 @@ export function TownMap({ residents, results, levers, runId, diaries, faces, onS
                     left: pct(leg.point.x, MAP_WIDTH),
                     top: pct(leg.point.y, MAP_HEIGHT),
                     transition: leg.ms ? `left ${leg.ms}ms linear, top ${leg.ms}ms linear` : undefined,
-                    // Nearer the bottom stands in front; a fresh reaction comes to the very front.
-                    zIndex: popped.includes(resident.id) ? 100 + popped.indexOf(resident.id) : 10 + Math.round(leg.point.y / 10),
+                    // Nearer the bottom stands in front; a fresh reaction comes to the front, and whoever is talking above all.
+                    zIndex: talking ? 200 : popped.includes(resident.id) ? 100 + popped.indexOf(resident.id) : 10 + Math.round(leg.point.y / 10),
                   }}
                 >
-                  {reaction && (
+                  {talking && (
+                    <span
+                      key={talking.text}
+                      // Near the top of the map the bubble hangs below the pin, so it isn't cut off.
+                      className={`bubble-pop pointer-events-none absolute w-[180px] rounded-2xl border-2 border-ink bg-white px-3 py-2 text-[13px] leading-snug text-ink shadow-md ${align} ${
+                        leg.point.y < 180 ? "top-full mt-1.5" : "bottom-full mb-1.5"
+                      }`}
+                    >
+                      <span className="block text-[10.5px] font-bold uppercase tracking-wider text-ink/50">
+                        to {residents.find((r) => r.id === talking.listener)?.shortName ?? talking.listener}
+                      </span>
+                      {talking.text}
+                    </span>
+                  )}
+                  {reaction && !talking && (
                     <span
                       className={`pointer-events-none absolute bottom-full mb-1.5 w-[150px] rounded-lg border border-ink/20 bg-diary px-2.5 py-1.5 font-diary text-[12.5px] italic leading-snug text-ink shadow-sm transition-opacity duration-200 ${align} ${
                         popped.includes(resident.id) ? "bubble-pop opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"

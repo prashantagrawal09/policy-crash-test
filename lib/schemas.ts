@@ -92,6 +92,14 @@ export const DiaryLineSchema = z.object({
 });
 export type DiaryLine = z.infer<typeof DiaryLineSchema>;
 
+// One remark of town chatter: who says it, to whom, and what.
+export const ChatterLineSchema = z.object({
+  speaker: z.string(),
+  listener: z.string(),
+  text: z.string().trim().min(1),
+});
+export type ChatterLine = z.infer<typeof ChatterLineSchema>;
+
 // The town is fixed code data, not validated input, so it is a plain type.
 export interface Resident {
   id: string;

@@ -6,7 +6,7 @@ import { runTown, type ResidentResult } from "@/lib/engine";
 import { leverText } from "@/lib/format";
 import { getPreset } from "@/lib/presets";
 import { withValue } from "@/lib/whatIf";
-import { DiaryLineSchema, ParseResultSchema, type DiaryLine, type Lever, type ParseResult } from "@/lib/schemas";
+import { ChatterLineSchema, DiaryLineSchema, ParseResultSchema, type ChatterLine, type DiaryLine, type Lever, type ParseResult } from "@/lib/schemas";
 
 // The browser-side run controller: owns the text box, the current run, its phase and its diaries.
 
@@ -26,12 +26,21 @@ export interface CrashRun {
 
 export type DiaryState = { status: "pending" } | { status: "arrived"; line: DiaryLine } | { status: "failed" };
 
+// The town chatter for the current run (prd.md > Town Chatter): asked for once the diaries are in.
+// "failed" means nothing came through; the rest of the page carries on without it.
+export interface ChatterState {
+  status: "idle" | "waiting" | "done" | "failed";
+  remarks: ChatterLine[];
+}
+
 // A message under the text box: the AI's not-a-policy reason, or the couldn't-read error.
 export type InputMessage = { kind: "not_policy"; text: string } | { kind: "error"; text: string };
 
 export const COULDNT_READ = "Couldn't read that one right now. Try again, or tap a preset.";
 
 const DIARY_TIMEOUT_MS = 20_000;
+const CHATTER_TIMEOUT_MS = 20_000;
+const NO_CHATTER: ChatterState = { status: "idle", remarks: [] };
 
 // One line of the diary stream; anything that isn't a well-formed diary is ignored.
 function parseDiaryEvent(line: string): DiaryLine | null {
@@ -40,6 +49,20 @@ function parseDiaryEvent(line: string): DiaryLine | null {
     if (event?.type !== "diary") return null;
     const diary = DiaryLineSchema.safeParse(event);
     return diary.success ? diary.data : null;
+  } catch {
+    return null;
+  }
+}
+
+// One line of the chatter stream; anything that isn't a well-formed remark is ignored.
+function parseRemarkEvent(line: string): ChatterLine | null {
+  try {
+    const event = JSON.parse(line);
+    if (event?.type !== "remark") return null;
+    const remark = ChatterLineSchema.safeParse(event);
+    return remark.success && RESIDENTS.some((r) => r.id === remark.data.speaker) && RESIDENTS.some((r) => r.id === remark.data.listener)
+      ? remark.data
+      : null;
   } catch {
     return null;
   }
@@ -59,10 +82,19 @@ export function useCrashTest() {
   const [message, setMessage] = useState<InputMessage | null>(null);
   // What-if slider values over the current run's levers; null means the policy as written.
   const [adjusted, setAdjusted] = useState<Lever[] | null>(null);
+  const [chatter, setChatter] = useState<ChatterState>(NO_CHATTER);
   const runIdRef = useRef(0);
   const diaryRequest = useRef<AbortController | null>(null);
+  const chatterRequest = useRef<AbortController | null>(null);
+  const chatterRun = useRef<number | null>(null); // the run whose chatter was asked for
 
-  useEffect(() => () => diaryRequest.current?.abort(), []);
+  useEffect(
+    () => () => {
+      diaryRequest.current?.abort();
+      chatterRequest.current?.abort();
+    },
+    [],
+  );
 
   // Streams diaries for one run into its cards. Lines from an older run are ignored;
   // when the stream ends, fails or passes 20 seconds, anything still pending has failed.
@@ -107,14 +139,58 @@ export function useCrashTest() {
           ),
         );
         setRunPhase("done");
+        void requestChatter(target);
       }
       if (diaryRequest.current === controller) diaryRequest.current = null;
+    }
+  }
+
+  // Once a run's diaries are in, the neighbours talk: remarks stream in as they're written.
+  // Asked for once per run (a diary retry doesn't ask again); late lines from an older run are ignored.
+  async function requestChatter(target: CrashRun) {
+    if (chatterRun.current === target.runId) return;
+    chatterRun.current = target.runId;
+    const controller = new AbortController();
+    chatterRequest.current = controller;
+    const timer = setTimeout(() => controller.abort(), CHATTER_TIMEOUT_MS);
+    const isCurrent = () => runIdRef.current === target.runId;
+    setChatter({ status: "waiting", remarks: [] });
+
+    try {
+      const response = await fetch("/api/chatter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ policyText: target.policyText, levers: target.levers }),
+        signal: controller.signal,
+      });
+      if (!response.ok || !response.body) return;
+
+      const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+      let buffer = "";
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += value;
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          const remark = parseRemarkEvent(line);
+          if (remark && isCurrent()) setChatter((current) => ({ ...current, remarks: [...current.remarks, remark] }));
+        }
+      }
+    } catch {
+      // Aborted by a newer run or the 20-second timer, or a network error: handled below.
+    } finally {
+      clearTimeout(timer);
+      if (isCurrent()) setChatter((current) => ({ ...current, status: current.remarks.length > 0 ? "done" : "failed" }));
+      if (chatterRequest.current === controller) chatterRequest.current = null;
     }
   }
 
   // A new run replaces the old one: its diary request is cancelled and its late lines dropped.
   function startRun(source: CrashRun["source"], policyText: string, levers: Lever[], assumptions: string[], confidence: CrashRun["confidence"]) {
     diaryRequest.current?.abort();
+    chatterRequest.current?.abort();
     runIdRef.current += 1;
     const next: CrashRun = {
       runId: runIdRef.current,
@@ -128,6 +204,7 @@ export function useCrashTest() {
     const ids = RESIDENTS.map((r) => r.id);
     setRun(next);
     setAdjusted(null);
+    setChatter(NO_CHATTER);
     setDiaries(Object.fromEntries(ids.map((id) => [id, { status: "pending" }])));
     setRunPhase("writing");
     void requestDiaries(next, ids);
@@ -217,7 +294,7 @@ export function useCrashTest() {
   const failedDiaries = Object.values(diaries).filter((d) => d.status === "failed").length;
 
   return {
-    text, editText, runPreset, runCurrent, canRun, phase, run, diaries, failedDiaries, retryDiaries, message,
+    text, editText, runPreset, runCurrent, canRun, phase, run, diaries, failedDiaries, retryDiaries, message, chatter,
     adjusted, activeLevers, activeResults, setLeverValue, resetWhatIf, rewriteDiaries,
   };
 }
