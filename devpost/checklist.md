@@ -109,7 +109,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Tap fares, then petrol, and read what the average says against what the faces show.
   Commit: `Show the average resident against the real ones`
 
-- [ ] **11. What-if sliders and tipping points**
+- [x] **11. What-if sliders and tipping points**
   Becomes usable: After a run, each change gets a slider; dragging it re-runs the town instantly, with a "what-if" tag and a reset. Cards show each person's tipping point for single-change policies. "Write new diaries" refreshes the diaries on request.
   Why now: It turns watching into exploring and shows the verdict thresholds at work, all in tested, deterministic code.
   PRD ref: `prd.md > What-if Sliders and Tipping Points`

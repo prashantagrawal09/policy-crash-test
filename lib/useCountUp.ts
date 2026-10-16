@@ -29,7 +29,16 @@ export function useCountUp(target: number, durationMs = 650): number {
       if (progress < 1) frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
+    // Animation frames pause in background tabs; make sure the final value still lands.
+    const snap = window.setTimeout(() => {
+      cancelAnimationFrame(frame);
+      shown.current = target;
+      setValue(target);
+    }, durationMs + 80);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(snap);
+    };
   }, [target, durationMs]);
 
   return value;

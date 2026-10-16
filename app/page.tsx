@@ -11,6 +11,8 @@ import { RESIDENTS } from "@/data/residents";
 import { expressionFor } from "@/lib/expressions";
 import { PRESETS } from "@/lib/presets";
 import { useCrashTest } from "@/lib/useCrashTest";
+import { tippingPoint } from "@/lib/whatIf";
+import { WhatIf } from "@/components/WhatIf";
 
 // Selecting a pin on the map brings that resident's card into view and flashes it.
 function showCard(residentId: string) {
@@ -29,14 +31,19 @@ function showCard(residentId: string) {
 // The one page, in PRD order: header, policy input, status and summary, average vs. the people, town map, chart and panel, residents.
 export default function Home() {
   const crash = useCrashTest();
-  const results = crash.run?.results ?? null;
+  // The town as it stands: the what-if sliders' values if moved, otherwise the policy as written.
+  const results = crash.activeResults;
+  const levers = crash.activeLevers;
+  const exploring = crash.adjusted !== null;
 
   // Each character's face: their diary's mood once it lands, otherwise their verdict's.
   const faces = Object.fromEntries(
     RESIDENTS.map((resident) => {
       const diary = crash.run ? crash.diaries[resident.id] : undefined;
       const verdict = results?.find((r) => r.id === resident.id)?.verdict ?? null;
-      return [resident.id, expressionFor(verdict, diary?.status === "arrived" ? diary.line.mood : null)];
+      // While exploring, the diaries describe the policy as written, so faces follow the numbers.
+      const mood = !exploring && diary?.status === "arrived" ? diary.line.mood : null;
+      return [resident.id, expressionFor(verdict, mood)];
     }),
   );
 
@@ -79,12 +86,24 @@ export default function Home() {
         runId={crash.run?.runId ?? null}
       />
 
+      {crash.run && levers && (
+        <WhatIf
+          levers={levers}
+          policyLevers={crash.run.levers}
+          adjusted={exploring}
+          onChange={crash.setLeverValue}
+          onReset={crash.resetWhatIf}
+          onRewrite={crash.rewriteDiaries}
+          busy={crash.phase === "reading"}
+        />
+      )}
+
       {results && <AverageStrip residents={RESIDENTS} results={results} faces={faces} />}
 
       <TownMap
         residents={RESIDENTS}
         results={results}
-        levers={crash.run?.levers ?? null}
+        levers={levers}
         runId={crash.run?.runId ?? null}
         diaries={crash.run ? crash.diaries : {}}
         faces={faces}
@@ -93,7 +112,7 @@ export default function Home() {
 
       {crash.run && (
         <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-          <ChangeChart residents={RESIDENTS} results={crash.run.results} faces={faces} />
+          <ChangeChart residents={RESIDENTS} results={results ?? crash.run.results} faces={faces} />
           <PolicyPanel run={crash.run} />
         </section>
       )}
@@ -108,6 +127,8 @@ export default function Home() {
             expression={faces[resident.id]}
             waiting={crash.phase === "reading"}
             runId={crash.run?.runId ?? null}
+            tippingPoint={levers ? (tippingPoint(resident, levers)?.label ?? null) : null}
+            diaryStale={exploring}
           />
         ))}
       </section>

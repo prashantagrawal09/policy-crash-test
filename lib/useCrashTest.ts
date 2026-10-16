@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { RESIDENTS } from "@/data/residents";
 import { runTown, type ResidentResult } from "@/lib/engine";
+import { leverText } from "@/lib/format";
 import { getPreset } from "@/lib/presets";
+import { withValue } from "@/lib/whatIf";
 import { DiaryLineSchema, ParseResultSchema, type DiaryLine, type Lever, type ParseResult } from "@/lib/schemas";
 
 // The browser-side run controller: owns the text box, the current run, its phase and its diaries.
@@ -13,7 +15,8 @@ export type Phase = "idle" | "reading" | "writing" | "done";
 
 export interface CrashRun {
   runId: number;
-  source: { kind: "preset"; presetId: string } | { kind: "typed" };
+  // "whatif": diaries rewritten for slider values the visitor chose, not a preset or a typed policy.
+  source: { kind: "preset"; presetId: string } | { kind: "typed" } | { kind: "whatif" };
   policyText: string;
   levers: Lever[];
   assumptions: string[];
@@ -54,6 +57,8 @@ export function useCrashTest() {
   const [run, setRun] = useState<CrashRun | null>(null);
   const [diaries, setDiaries] = useState<Record<string, DiaryState>>({});
   const [message, setMessage] = useState<InputMessage | null>(null);
+  // What-if slider values over the current run's levers; null means the policy as written.
+  const [adjusted, setAdjusted] = useState<Lever[] | null>(null);
   const runIdRef = useRef(0);
   const diaryRequest = useRef<AbortController | null>(null);
 
@@ -122,6 +127,7 @@ export function useCrashTest() {
     };
     const ids = RESIDENTS.map((r) => r.id);
     setRun(next);
+    setAdjusted(null);
     setDiaries(Object.fromEntries(ids.map((id) => [id, { status: "pending" }])));
     setRunPhase("writing");
     void requestDiaries(next, ids);
@@ -185,9 +191,33 @@ export function useCrashTest() {
     void requestDiaries(run, failed);
   }
 
+  // Sliding a value re-runs the engine at once; diaries wait until asked for again.
+  function setLeverValue(index: number, value: number) {
+    if (!run) return;
+    const next = withValue(adjusted ?? run.levers, index, value);
+    setAdjusted(next.every((lever, i) => lever.value === run.levers[i].value) ? null : next);
+  }
+
+  function resetWhatIf() {
+    setAdjusted(null);
+  }
+
+  // "Write new diaries": the what-if becomes a run of its own, so diaries match the new numbers.
+  function rewriteDiaries() {
+    if (!run || !adjusted || reading) return;
+    const policyText = `${run.policyText} (what-if: ${adjusted.map(leverText).join("; ")})`.slice(0, 500);
+    startRun({ kind: "whatif" }, policyText, adjusted, run.assumptions, run.confidence);
+  }
+
+  const activeLevers = adjusted ?? run?.levers ?? null;
+  const activeResults = run ? (adjusted ? runTown(RESIDENTS, adjusted) : run.results) : null;
+
   const phase: Phase = reading ? "reading" : runPhase;
   const canRun = text.trim().length > 0 && !reading;
   const failedDiaries = Object.values(diaries).filter((d) => d.status === "failed").length;
 
-  return { text, editText, runPreset, runCurrent, canRun, phase, run, diaries, failedDiaries, retryDiaries, message };
+  return {
+    text, editText, runPreset, runCurrent, canRun, phase, run, diaries, failedDiaries, retryDiaries, message,
+    adjusted, activeLevers, activeResults, setLeverValue, resetWhatIf, rewriteDiaries,
+  };
 }

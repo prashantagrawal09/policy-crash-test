@@ -17,6 +17,8 @@ interface Props {
   expression: Expression; // the character's face (lib/expressions.ts)
   waiting: boolean; // a typed policy is being read: the card shimmers in place
   runId: number | null; // a new run jolts the cards it hits
+  tippingPoint?: string | null; // "Feels it from +22%" (single-change policies)
+  diaryStale?: boolean; // the what-if sliders moved: this diary was written for the policy as written
 }
 
 // The big change number counts up to its value; screen readers get the exact final text.
@@ -35,7 +37,7 @@ function BigNumber({ amount, suffix, finalText }: { amount: number; suffix: stri
 
 // One resident's card, before and after a run (prd.md > Resident Cards): who they are, what the
 // policy does to their money, then how it feels. Cards never move; only contents and colour change.
-export function ResidentCard({ resident, result, diary, expression, waiting, runId }: Props) {
+export function ResidentCard({ resident, result, diary, expression, waiting, runId, tippingPoint = null, diaryStale = false }: Props) {
   const verdict = result?.verdict ?? null;
   const style = verdict ? VERDICT_STYLES[verdict] : null;
   const text = result ? cardText(result) : null;
@@ -109,6 +111,15 @@ export function ResidentCard({ resident, result, diary, expression, waiting, run
               {text.monthlyEquivalent && <p className="mt-1 text-sm font-medium">{text.monthlyEquivalent}</p>}
               <p className="mt-0.5 text-sm text-ink/60">{text.incomeLine}</p>
               <p className="mt-3 text-sm font-semibold">{text.spareLine}</p>
+              {tippingPoint && (
+                <p className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-ink/25 px-2 py-0.5 text-xs font-semibold text-ink/70">
+                  <span aria-hidden>↗</span>
+                  <span>
+                    <span className="sr-only">Tipping point: </span>
+                    {tippingPoint}
+                  </span>
+                </p>
+              )}
             </div>
           ) : (
             <div className="tabular-nums">
@@ -123,7 +134,10 @@ export function ResidentCard({ resident, result, diary, expression, waiting, run
 
         {diary && (
           <div className="mt-auto pt-1">
-            <DiaryNote state={diary} />
+            {diaryStale && <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-ink/45">Written for the policy as written</p>}
+            <div className={diaryStale ? "opacity-45" : ""}>
+              <DiaryNote state={diary} />
+            </div>
           </div>
         )}
       </div>

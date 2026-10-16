@@ -5,17 +5,20 @@ import type { CrashRun } from "@/lib/useCrashTest";
 // Always open. A preset is never described as read by the AI.
 export function PolicyPanel({ run }: { run: CrashRun }) {
   const isPreset = run.source.kind === "preset";
+  const isWhatIf = run.source.kind === "whatif";
 
   return (
     <aside className="flex flex-col rounded-lg border-2 border-ink bg-white p-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <h2 className="font-display text-2xl font-black leading-tight font-stretch-condensed">
-          {isPreset ? "How this preset is set up" : "How the AI read this policy"}
+          {isPreset ? "How this preset is set up" : isWhatIf ? "How this what-if is set up" : "How the AI read this policy"}
         </h2>
         {isPreset ? (
           <span className="rounded border border-ink px-2 py-0.5 text-xs font-bold uppercase tracking-wider">
             Hand-checked preset
           </span>
+        ) : isWhatIf ? (
+          <span className="rounded bg-hazard px-2 py-0.5 text-xs font-bold uppercase tracking-wider">Your what-if</span>
         ) : (
           run.confidence && (
             <span
