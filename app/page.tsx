@@ -12,6 +12,7 @@ import { ResidentCard } from "@/components/ResidentCard";
 import { StatusLine } from "@/components/StatusLine";
 import { TownChatter } from "@/components/TownChatter";
 import { TownMap } from "@/components/TownMap";
+import { WhyDrawer } from "@/components/WhyDrawer";
 import { expressionFor } from "@/lib/expressions";
 import { PRESETS } from "@/lib/presets";
 import { useConversation } from "@/lib/useConversation";
@@ -43,6 +44,7 @@ export default function Home() {
   const crash = useCrashTest();
   const town = crash.town; // the 8 residents, and you if you've moved in
   const [moveInOpen, setMoveInOpen] = useState(false);
+  const [whyId, setWhyId] = useState<string | null>(null); // whose Why? drawer is open
   // The guided intro plays on a first visit (known only in the browser) and can be replayed.
   const [introOpen, setIntroOpen] = useState(false);
   useEffect(() => {
@@ -210,9 +212,17 @@ export default function Home() {
             runId={crash.run?.runId ?? null}
             tippingPoint={levers ? (tippingPoint(resident, levers)?.label ?? null) : null}
             diaryStale={exploring}
+            onWhy={() => setWhyId(resident.id)}
           />
         ))}
       </section>
+
+      {(() => {
+        const resident = town.find((r) => r.id === whyId);
+        const result = results?.find((r) => r.id === whyId);
+        if (!resident || !result || !levers) return null;
+        return <WhyDrawer key={resident.id} resident={resident} result={result} levers={levers} expression={faces[resident.id]} onClose={() => setWhyId(null)} />;
+      })()}
     </main>
   );
 }

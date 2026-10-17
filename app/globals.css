@@ -244,3 +244,13 @@ body {
   animation: talk-dash 0.9s linear infinite;
   @media (prefers-reduced-motion: reduce) { animation: none; }
 }
+
+/* The Why? drawer (prd.md > Why? Budget Drawer) slides in; still for reduced motion. */
+@keyframes drawer-in {
+  from { opacity: 0; transform: translateY(18px); }
+}
+
+@utility drawer-in {
+  animation: drawer-in 220ms ease-out;
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}

@@ -4,6 +4,7 @@ import { CATEGORIES, type Category, type Eligibility, type Lever, type Resident 
 // Money is handled in whole cents so "exactly $0" and the verdict lines are exact.
 
 export type Verdict = "better_off" | "barely_affected" | "feels_it" | "hard_hit" | "unaffected";
+export type Lens = Exclude<Verdict, "unaffected">; // a verdict one lens can give
 
 export interface ResidentResult {
   id: string;
@@ -48,6 +49,10 @@ export interface AppliedLevers {
   incomeCents: number;
   spendingCents: number;
   oneOffCents: number;
+  // For explaining a result (the Why? drawer): each category before and after, and a fixed
+  // amount on all taxable spending, which applies to the total rather than to one category.
+  categories: Record<Category, { before: number; after: number }>;
+  taxableFixedCents: number;
 }
 
 // Each percent change applies to the pre-policy amount, so lever order never matters.
@@ -90,20 +95,33 @@ export function applyLevers(resident: Resident, levers: Lever[]): AppliedLevers 
     incomeCents: Math.max(0, baseIncome + incomeDelta),
     spendingCents: after.reduce((sum, cents) => sum + cents, 0) + taxableFixed,
     oneOffCents,
+    categories: Object.fromEntries(CATEGORIES.map((c, i) => [c, { before: base[c], after: after[i] }])) as Record<Category, { before: number; after: number }>,
+    taxableFixedCents: taxableFixed,
   };
 }
 
-const SEVERITY: Record<Exclude<Verdict, "unaffected">, number> = {
+const SEVERITY: Record<Lens, number> = {
   better_off: 0,
   barely_affected: 1,
   feels_it: 2,
   hard_hit: 3,
 };
 
+export interface Lenses {
+  byIncome: Lens | null; // null when unaffected
+  bySpare: Lens | null; // null when unaffected, for gains, and for losses under 10% of spare money
+  verdict: Verdict;
+}
+
 // prd.md > Verdicts. Both lenses are checked and the worse one wins; the spare-money lens
 // applies to losses only. A line counts as crossed only when the value goes past it.
 export function verdict(monthlyCents: number, oneOffCents: number, incomeCents: number, spareCents: number): Verdict {
-  if (monthlyCents === 0 && oneOffCents === 0) return "unaffected";
+  return verdictLenses(monthlyCents, oneOffCents, incomeCents, spareCents).verdict;
+}
+
+// The same rules, with each lens's own answer kept, so the Why? drawer can show which decided.
+export function verdictLenses(monthlyCents: number, oneOffCents: number, incomeCents: number, spareCents: number): Lenses {
+  if (monthlyCents === 0 && oneOffCents === 0) return { byIncome: null, bySpare: null, verdict: "unaffected" };
 
   // Scale by 12 so a one-off counts as value ÷ 12 a month with no fractions, then
   // compare by cross-multiplying: n / income < -1%  <=>  100n < -income.
@@ -112,19 +130,19 @@ export function verdict(monthlyCents: number, oneOffCents: number, incomeCents: 
   const spare = 12 * spareCents;
   const belowZero = spare + n < 0;
 
-  let byIncome: Exclude<Verdict, "unaffected">;
+  let byIncome: Lens;
   if (belowZero || 20 * n < -income) byIncome = "hard_hit"; // worse than -5%
   else if (100 * n < -income) byIncome = "feels_it"; // worse than -1%
   else if (100 * n > income) byIncome = "better_off"; // above +1%
   else byIncome = "barely_affected";
 
-  if (n >= 0) return byIncome;
+  if (n >= 0) return { byIncome, bySpare: null, verdict: byIncome };
 
-  let bySpare: Exclude<Verdict, "unaffected"> | null = null;
+  let bySpare: Lens | null = null;
   if (belowZero || 10 * n < -3 * spare) bySpare = "hard_hit"; // worse than -30%
   else if (10 * n < -spare) bySpare = "feels_it"; // worse than -10%
 
-  return bySpare && SEVERITY[bySpare] > SEVERITY[byIncome] ? bySpare : byIncome;
+  return { byIncome, bySpare, verdict: bySpare && SEVERITY[bySpare] > SEVERITY[byIncome] ? bySpare : byIncome };
 }
 
 export function runResident(resident: Resident, levers: Lever[]): ResidentResult {

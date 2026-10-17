@@ -258,7 +258,7 @@ const TARGET_LABELS: Record<Exclude<Lever["target"], "income">, string> = {
   all_taxable_spending: "Prices of taxable goods and services",
 };
 
-const HOUSING_LABELS: Record<HousingType, string> = {
+export const HOUSING_LABELS: Record<HousingType, string> = {
   hdb_2_room: "HDB 2-room flats",
   hdb_3_room: "HDB 3-room flats",
   hdb_4_room: "HDB 4-room flats",
@@ -267,7 +267,7 @@ const HOUSING_LABELS: Record<HousingType, string> = {
   with_parents: "their parents' homes",
 };
 
-const TAG_LABELS: Record<Tag, string> = {
+export const TAG_LABELS: Record<Tag, string> = {
   student: "students",
   senior: "seniors",
   retiree: "retirees",

@@ -169,7 +169,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Run petrol and play the month; then drag the what-if slider and play it again.
   Commit: `Play out a month in the life`
 
-- [ ] **17. Why? budget drawer**
+- [x] **17. Why? budget drawer**
   Becomes usable: A "Why?" button on every card opens a drawer with that person's whole budget before and after, the changed lines highlighted, and both checks behind the verdict (income and spare money), naming the one that decided.
   Why now: It answers the first question anyone asks about a verdict, using the engine's own category numbers.
   PRD ref: `prd.md > Why? Budget Drawer`

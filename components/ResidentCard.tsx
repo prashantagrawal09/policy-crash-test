@@ -19,6 +19,7 @@ interface Props {
   runId: number | null; // a new run jolts the cards it hits
   tippingPoint?: string | null; // "Feels it from +22%" (single-change policies)
   diaryStale?: boolean; // the what-if sliders moved: this diary was written for the policy as written
+  onWhy?: () => void; // opens the Why? drawer for this resident
 }
 
 // The big change number counts up to its value; screen readers get the exact final text.
@@ -37,7 +38,7 @@ function BigNumber({ amount, suffix, finalText }: { amount: number; suffix: stri
 
 // One resident's card, before and after a run (prd.md > Resident Cards): who they are, what the
 // policy does to their money, then how it feels. Cards never move; only contents and colour change.
-export function ResidentCard({ resident, result, diary, expression, waiting, runId, tippingPoint = null, diaryStale = false }: Props) {
+export function ResidentCard({ resident, result, diary, expression, waiting, runId, tippingPoint = null, diaryStale = false, onWhy }: Props) {
   const verdict = result?.verdict ?? null;
   const style = verdict ? VERDICT_STYLES[verdict] : null;
   const text = result ? cardText(result) : null;
@@ -84,11 +85,24 @@ export function ResidentCard({ resident, result, diary, expression, waiting, run
           <p className="-mt-1 text-sm leading-snug text-ink/70">{resident.everydayLine}</p>
 
           {text && style && (
-            <p
-              className={`self-start rounded px-2 py-0.5 text-xs font-bold uppercase tracking-wider transition-colors duration-300 motion-reduce:transition-none ${style.badge}`}
-            >
-              {text.verdictLabel}
-            </p>
+            <div className="flex items-center justify-between gap-2">
+              <p
+                className={`rounded px-2 py-0.5 text-xs font-bold uppercase tracking-wider transition-colors duration-300 motion-reduce:transition-none ${style.badge}`}
+              >
+                {text.verdictLabel}
+              </p>
+              {onWhy && (
+                <button
+                  type="button"
+                  onClick={onWhy}
+                  aria-haspopup="dialog"
+                  aria-label={`Why ${text.verdictLabel.toLowerCase()}? See ${resident.shortName}'s budget`}
+                  className="rounded-full border-2 border-ink bg-white px-2.5 py-0.5 text-xs font-bold transition-colors hover:bg-hazard"
+                >
+                  Why?
+                </button>
+              )}
+            </div>
           )}
 
           {showChange && text ? (
