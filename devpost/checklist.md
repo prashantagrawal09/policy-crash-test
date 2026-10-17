@@ -159,13 +159,44 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Watch the intro as a first-time visitor would, then skip it on a second visit.
   Commit: `Add a guided intro`
 
+- [ ] **16. A month in the life**
+  Becomes usable: A day slider and Play button run one month. Everyone's spare money shrinks or grows day by day as the change adds up, a one-off lands on day 1, and anyone who runs out gets a "Gone by day N" marker (Faizal under petrol: day 10).
+  Why now: It's the most direct picture of the kernel, what's left after the bill, and it reuses the engine's numbers as they are.
+  PRD ref: `prd.md > A Month in the Life`
+  Spec ref: `spec.md > Components` (Third upgrade: MonthInLife)
+  Build: Add `lib/month.ts` (each day's spare money and the run-out day, from the engine's cents) with `tests/month.test.ts`, and `components/MonthInLife.tsx` (Play, day slider, one row per resident, a headline that follows the month). It follows the what-if sliders and includes you.
+  Verify (mechanical): `npm test` passes, including Faizal gone by day 10 and $200 short on day 30 under petrol, and every day-30 value matching the engine's spare money after; `npm run build` passes; in the browser Play runs the month, the slider scrubs it, and nothing scrolls sideways at 375 px.
+  Learner check: Run petrol and play the month; then drag the what-if slider and play it again.
+  Commit: `Play out a month in the life`
+
+- [ ] **17. Why? budget drawer**
+  Becomes usable: A "Why?" button on every card opens a drawer with that person's whole budget before and after, the changed lines highlighted, and both checks behind the verdict (income and spare money), naming the one that decided.
+  Why now: It answers the first question anyone asks about a verdict, using the engine's own category numbers.
+  PRD ref: `prd.md > Why? Budget Drawer`
+  Spec ref: `spec.md > Components` (Third upgrade: WhyDrawer)
+  Build: Extend `lib/engine.ts` to return each category's before and after and both verdict checks (tested, no change to any existing result), add `lib/why.ts` for the drawer's rows and wording, and `components/WhyDrawer.tsx` as a native dialog.
+  Verify (mechanical): `npm test` passes, including every drawer's rows adding up to the card's monthly change for every preset, and Uncle Raju's fares drawer naming spare money as the deciding check; `npm run build` passes; in the browser the drawer opens from a card, closes with Escape and returns focus, and fits at 375 px.
+  Learner check: Open Uncle Raju's and Nurul's drawers under fares and compare why they differ.
+  Commit: `Show why each verdict landed`
+
+- [ ] **18. The phone map follows the action**
+  Becomes usable: On narrow screens the map glides to where a policy lands and to whoever is speaking in the chatter, and a "Whole town" toggle fits the map to the screen. Wide screens don't change.
+  Why now: The target user reads on a phone, where the map currently needs sideways scrolling to find the action.
+  PRD ref: `prd.md > Phone Map Follows the Action`
+  Spec ref: `spec.md > Components` (Third upgrade: map focus)
+  Build: Add `lib/mapFocus.ts` (where to centre for a policy, and the clamped scroll position) with `tests/mapFocus.test.ts`; extend `TownMap` with the glide, the chatter follow and the "Whole town" toggle, jumping instead of gliding for reduced motion.
+  Verify (mechanical): `npm test` passes; `npm run build` passes; at 375 px the petrol station is in view after petrol and the childcare centre after childcare, "Whole town" fits without sideways scrolling, and at 1280 px nothing moves; then the production demo runs end to end.
+  Learner check: On a phone-width window, run petrol and childcare, watch the map follow, and try "Whole town".
+  Commit: `Let the phone map follow the action`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 2: all 4 presets with cards, bars, chart and panel; approve the 8 everyday lines and the look before diaries and the parser build on them. Learner: "Looks good to me. Keep the everyday lines as they are."
 - [x] Final kick-the-tires exploration and feedback completed — after slice 6, in production mode. Learner: "I tried it in production mode: the demo, awkward inputs and phone width all work."
 - [x] Upgrade explored — after slice 8: the characters and the town map, before the polish slice. Learner: "The map and characters look great. No changes, go ahead with the polish slice."
 - [x] Living town explored — after slice 12, before chatter and the rest
-- [ ] Final kick-the-tires after the upgrade — after slice 15, in production mode, before the Oct 24 feature freeze
+- [x] Final kick-the-tires after the upgrade — after slice 15, in production mode. Learner: "I tried it in production mode: the intro, all four presets, the sliders, moving in and phone width all work. No changes." Then asked for more before the freeze (slices 16–18).
+- [ ] Final kick-the-tires after slices 16–18 — in production mode, before the Oct 24 feature freeze
 
 ## Final Review
 
@@ -203,3 +234,4 @@ Activity mode: Prior practice connected (focused alternative), plus the app map.
 - The upgrade's final review moved from after slice 9 to after slice 15. At the planned review, the learner asked for more ("we have to improve the interface by a lot"), so slices 10–15 were added: average vs. the people, what-if sliders, a living town, town chatter, add yourself, and a guided intro. Feature freeze is Oct 24. `scope.md`, `prd.md` and `spec.md` were updated with the learner's agreement.
 - Town chatter stays among the 8 residents even after you move in. `prd.md > Add Yourself` says your answers go to Claude only for your diary, so slice 14 sends them only with the diary request instead of giving chatter a resident list.
 - "Move into town" also asks how many people live at home. Each diary's input states the household size, and guessing it from "children at home" could have put the wrong family into your diary.
+- After the upgrade's kick-the-tires (no changes), the learner asked for more before the freeze ("we still hv time, do something more"). From six proposed ideas they chose three, added as slices 16–18: a month in the life, a Why? budget drawer, and a phone map that follows the action. The upgrade's final review moved to after slice 18. `prd.md`, `spec.md` and `scope.md` were updated with the learner's agreement. The engine gains outputs (each category's before and after, both verdict checks) but no existing number changes.

@@ -217,6 +217,10 @@ PRD ref: `prd.md > The Core Journey`, `prd.md > States and Boundaries`.
   - **Town chatter:** `POST /api/chatter` with `lib/writeChatter.ts` and `prompts/town-chatter.md` (approved by you), streamed as one JSON line per remark (speaker, listener, text), and checked by `evals/chatter.eval.ts`. Implements `prd.md > Town Chatter`.
   - **`MoveIn`** form with `lib/yourself.ts`: builds a resident from your answers (checked with zod; the server rebuilds you from the same answers); the engine, summary, chart, cards, map and diaries take a 9th resident, while town chatter stays among the 8. Implements `prd.md > Add Yourself`.
   - **`GuidedIntro`**: a scroll story using the presets and the engine only. Implements `prd.md > Guided Intro`.
+- **Third upgrade** (added after the second upgrade's review, same Oct 24 freeze):
+  - **`MonthInLife`** with `lib/month.ts`: each day's spare money as the monthly change accumulates evenly, a one-off on day 1, and the day spare money runs out, all from the engine's cents. Implements `prd.md > A Month in the Life`.
+  - **`WhyDrawer`** with `lib/why.ts`: a native `<dialog>` showing the budget lines before and after and both verdict checks. `lib/engine.ts` additionally returns each category's before and after (`applyLevers`) and both checks (`verdictLenses`); every existing result is unchanged. Implements `prd.md > Why? Budget Drawer`.
+  - **Map focus** in `TownMap` with `lib/mapFocus.ts`: on narrow screens the map's scroll frame glides to the policy's crowd and to the current speaker, plus a "Whole town" fit toggle. Implements `prd.md > Phone Map Follows the Action`.
 
 ### Tests
 Vitest. Run them with `npm test`; they work offline and need no key.

@@ -121,6 +121,31 @@ Source: `scope.md > The Unique Kernel` ("averages hide people").
 
 - [ ] The intro can be skipped at any point and never blocks the app.
 
+### A Month in the Life
+- A day slider and a Play button run one month, day 1 to day 30. Each resident's spare money shrinks (or grows) as the policy's monthly change adds up day by day; a one-off lands in full on day 1.
+- It says plainly that it's a simplification: the change is spread evenly over the month.
+- When someone's spare money runs out, they get a "Gone by day N" marker. Under petrol, Faizal's is gone by day 10 and he's $200 short by day 30. A headline follows the month, naming the day's most important moment.
+- It follows the what-if sliders and includes you if you've moved in. No AI.
+
+- [ ] Under petrol, Faizal's spare money is gone by day 10 and he's $200 short on day 30.
+- [ ] On day 30, every resident's value matches their spare money after the change.
+
+### Why? Budget Drawer
+- Every card has a "Why?" button. It opens a drawer with that person's whole budget: income and each spending category, before and after, with the lines the policy changed highlighted, then spare money before and after.
+- It shows both checks behind the verdict, the change as a share of income and as a share of spare money, which line each one crosses, and which decided. Uncle Raju under fares: 0.9% of income (Barely affected) but 12% of spare money (Feels it), so he feels it.
+- It closes with Escape, the close button or a click outside, and focus goes back to the card. No AI.
+
+- [ ] For every preset, each drawer's changed lines add up to the card's monthly change.
+- [ ] Uncle Raju's fares drawer shows bus and MRT going from $60 to $72 and names spare money as the check that decided.
+
+### Phone Map Follows the Action
+- On narrow screens, where the map scrolls sideways inside its frame, the map glides to the action when a policy lands (the people it reaches and the places it lights), and to whoever is speaking during the chatter.
+- A "Whole town" toggle shrinks the map to fit the screen, and "Close up" goes back.
+- With reduced motion it jumps instead of gliding. On wide screens, where the whole map fits, nothing changes.
+
+- [ ] At 375 px, the petrol station is in view after the petrol preset, and the childcare centre after the childcare preset.
+- [ ] "Whole town" fits the map on screen without sideways scrolling.
+
 ### Monthly Change Chart
 - One bar per resident, in card order, showing each person's monthly change from a zero line: losses one way, gains the other.
 - Bars use the verdict colours, so a short amber bar (Raju, −$12) sits beside a longer grey one (Nurul, −$40).
@@ -228,6 +253,7 @@ Computed from the rules above, using the same check that shaped the demo.
 - Diaries for all 8, arriving after the numbers, with one retry for the town.
 - Illustrated characters whose faces react, and the town map (an upgrade agreed after the build).
 - Average vs. the people, what-if sliders with tipping points, a living town, town chatter, adding yourself, and a guided intro (second upgrade, feature freeze Oct 24).
+- A month in the life, a Why? budget drawer, and a phone map that follows the action (third upgrade, same freeze).
 - The waiting, failure and empty states under **States and Boundaries**.
 
 ## Deferred From the POC
