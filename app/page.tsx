@@ -4,6 +4,7 @@ import { AverageStrip } from "@/components/AverageStrip";
 import { useEffect, useState } from "react";
 import { ChangeChart } from "@/components/ChangeChart";
 import { GuidedIntro, introSeen, markIntroSeen } from "@/components/GuidedIntro";
+import { MonthInLife } from "@/components/MonthInLife";
 import { MoveIn } from "@/components/MoveIn";
 import { PolicyInput } from "@/components/PolicyInput";
 import { PolicyPanel } from "@/components/PolicyPanel";
@@ -37,7 +38,7 @@ function showCard(residentId: string) {
   window.setTimeout(() => card.classList.remove("card-flash"), 1700);
 }
 
-// The one page, in PRD order: the guided intro (first visit), header, policy input, moving in, status and summary, average vs. the people, town map, town chatter, chart and panel, residents.
+// The one page, in PRD order: the guided intro (first visit), header, policy input, moving in, status and summary, average vs. the people, town map, town chatter, a month in the life, chart and panel, residents.
 export default function Home() {
   const crash = useCrashTest();
   const town = crash.town; // the 8 residents, and you if you've moved in
@@ -187,6 +188,8 @@ export default function Home() {
           stale={exploring}
         />
       )}
+
+      {results && <MonthInLife residents={town} results={results} faces={faces} runId={crash.run?.runId ?? null} />}
 
       {crash.run && (
         <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">

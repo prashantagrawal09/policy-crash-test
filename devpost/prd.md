@@ -128,7 +128,7 @@ Source: `scope.md > The Unique Kernel` ("averages hide people").
 - It follows the what-if sliders and includes you if you've moved in. No AI.
 
 - [ ] Under petrol, Faizal's spare money is gone by day 10 and he's $200 short on day 30.
-- [ ] On day 30, every resident's value matches their spare money after the change.
+- [ ] On day 30, every resident's value is their spare money plus the monthly change, plus any one-off (which lands on day 1).
 
 ### Why? Budget Drawer
 - Every card has a "Why?" button. It opens a drawer with that person's whole budget: income and each spending category, before and after, with the lines the policy changed highlighted, then spare money before and after.

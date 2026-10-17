@@ -159,13 +159,13 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Watch the intro as a first-time visitor would, then skip it on a second visit.
   Commit: `Add a guided intro`
 
-- [ ] **16. A month in the life**
+- [x] **16. A month in the life**
   Becomes usable: A day slider and Play button run one month. Everyone's spare money shrinks or grows day by day as the change adds up, a one-off lands on day 1, and anyone who runs out gets a "Gone by day N" marker (Faizal under petrol: day 10).
   Why now: It's the most direct picture of the kernel, what's left after the bill, and it reuses the engine's numbers as they are.
   PRD ref: `prd.md > A Month in the Life`
   Spec ref: `spec.md > Components` (Third upgrade: MonthInLife)
   Build: Add `lib/month.ts` (each day's spare money and the run-out day, from the engine's cents) with `tests/month.test.ts`, and `components/MonthInLife.tsx` (Play, day slider, one row per resident, a headline that follows the month). It follows the what-if sliders and includes you.
-  Verify (mechanical): `npm test` passes, including Faizal gone by day 10 and $200 short on day 30 under petrol, and every day-30 value matching the engine's spare money after; `npm run build` passes; in the browser Play runs the month, the slider scrubs it, and nothing scrolls sideways at 375 px.
+  Verify (mechanical): `npm test` passes, including Faizal gone by day 10 and $200 short on day 30 under petrol, and every day-30 value being spare money plus the engine's monthly change plus any one-off; `npm run build` passes; in the browser Play runs the month, the slider scrubs it, and nothing scrolls sideways at 375 px.
   Learner check: Run petrol and play the month; then drag the what-if slider and play it again.
   Commit: `Play out a month in the life`
 
