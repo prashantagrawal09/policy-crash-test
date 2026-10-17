@@ -6,6 +6,7 @@ import type { ResidentResult } from "@/lib/engine";
 import type { Expression } from "@/lib/expressions";
 import { VERDICT_LABELS } from "@/lib/format";
 import type { ChatterLine, Lever, Resident } from "@/lib/schemas";
+import { policyFocusX, scrollLeftFor, talkFocusX } from "@/lib/mapFocus";
 import { clockLabel, darkness, gatherings, HOUR_MS, whereAt, type Point } from "@/lib/townLife";
 import { coinRecipients, directionLabel, HOMES, LANDMARKS, litLandmarks, MAP_HEIGHT, MAP_WIDTH, type Box, type Direction, type Landmark } from "@/lib/townMap";
 import type { DiaryState } from "@/lib/useCrashTest";
@@ -433,6 +434,11 @@ function TalkLine({ from, to }: { from: Point; to: Point }) {
   );
 }
 
+// The map's narrowest width. Below it the map scrolls sideways in its frame, and on those
+// screens the frame follows the action (prd.md > Phone Map Follows the Action).
+const STAGE_PX = 760;
+const FRAME_PADDING = 12; // px-3 on each side of the frame
+
 const HOME_PINS: Record<string, Point> = Object.fromEntries(Object.entries(HOMES).map(([id, home]) => [id, home.pin]));
 
 export function TownMap({ residents, results, levers, runId, diaries, faces, speaking, onSelect, onMoveIn }: Props) {
@@ -449,6 +455,43 @@ export function TownMap({ residents, results, levers, runId, diaries, faces, spe
   const legs = useWalkers(desired, homes, !still);
   const dark = still ? 0 : darkness(hour);
   const movedIn = residents.some((r) => r.id === "you");
+
+  // On narrow screens: glide the frame to where a policy lands and to whoever is talking, or fit
+  // the whole town on screen. Wide screens show the whole map and none of this happens.
+  const frame = useRef<HTMLDivElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
+  const [frameWidth, setFrameWidth] = useState<number | null>(null);
+  const [stageHeight, setStageHeight] = useState(0);
+  const [fit, setFit] = useState(false);
+  useEffect(() => {
+    const scroller = frame.current;
+    const map = stage.current;
+    if (!scroller || !map) return;
+    const measure = () => {
+      setFrameWidth(scroller.clientWidth);
+      setStageHeight(map.offsetHeight);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(scroller);
+    observer.observe(map);
+    return () => observer.disconnect();
+  }, []);
+  const narrow = frameWidth !== null && frameWidth - 2 * FRAME_PADDING < STAGE_PX;
+  const fitted = fit && narrow;
+  const scale = frameWidth ? (frameWidth - 2 * FRAME_PADDING) / STAGE_PX : 1;
+
+  const glideTo = (x: number | null) => {
+    const scroller = frame.current;
+    const map = stage.current;
+    if (x === null || !scroller || !map || scroller.scrollWidth <= scroller.clientWidth) return;
+    const focusPx = FRAME_PADDING + (x / MAP_WIDTH) * map.offsetWidth;
+    scroller.scrollTo({ left: scrollLeftFor(focusPx, scroller.scrollWidth, scroller.clientWidth), behavior: still ? "auto" : "smooth" });
+  };
+  const policyX = results && levers ? policyFocusX(residents, levers, results) : null;
+  const talkX = speaking && legs[speaking.speaker] ? talkFocusX(legs[speaking.speaker].point, legs[speaking.listener]?.point) : null;
+  useEffect(() => glideTo(policyX), [runId, policyX]);
+  useEffect(() => glideTo(talkX), [talkX]);
 
   // Reactions pop up for a few seconds as each diary lands; hovering or focusing a pin shows them again.
   const [popped, setPopped] = useState<string[]>([]);
@@ -482,6 +525,16 @@ export function TownMap({ residents, results, levers, runId, diaries, faces, spe
               {clockLabel(hour)}
             </span>
           )}
+          {narrow && (
+            <button
+              type="button"
+              onClick={() => setFit((on) => !on)}
+              aria-pressed={fit}
+              className="self-center rounded-full border-2 border-ink bg-white px-2.5 py-0.5 text-xs font-bold transition-colors hover:bg-hazard"
+            >
+              {fit ? "Close up" : "Whole town"}
+            </button>
+          )}
         </span>
         <span className="text-xs text-ink/55">
           {results
@@ -489,10 +542,16 @@ export function TownMap({ residents, results, levers, runId, diaries, faces, spe
             : still
               ? "Everyone at home. Pick a policy and watch the town react."
               : "A day in town. Pick a policy and watch who it reaches."}
+          {narrow && !fit && " Swipe the map to look around."}
         </span>
       </figcaption>
-      <div className="overflow-x-auto px-3 pb-3">
-        <div className="relative min-w-[760px] rounded-md bg-[#E6EED9] pt-10">
+      <div ref={frame} className="overflow-x-auto px-3 pb-3">
+        <div style={fitted ? { height: stageHeight * scale, overflow: "hidden" } : undefined}>
+        <div
+          ref={stage}
+          className="relative min-w-[760px] rounded-md bg-[#E6EED9] pt-10"
+          style={fitted ? { width: STAGE_PX, transform: `scale(${scale})`, transformOrigin: "top left" } : undefined}
+        >
           {/* The strip above the scene darkens with it at night. */}
           <div className="pointer-events-none absolute inset-0 rounded-md bg-[#1B2547]" style={{ opacity: dark * 0.45, transition: `opacity ${HOUR_MS}ms ease-in-out` }} aria-hidden />
           <div className="relative w-full" style={{ aspectRatio: `${MAP_WIDTH} / ${MAP_HEIGHT}` }}>
@@ -598,6 +657,7 @@ export function TownMap({ residents, results, levers, runId, diaries, faces, spe
               );
             })}
           </div>
+        </div>
         </div>
       </div>
     </figure>

@@ -68,6 +68,9 @@
     <li><span class="tag ai">AI</span><strong>The town chatter</strong>After the diaries, Claude Sonnet 5.5 writes 4–6 remarks between neighbours from their card strings; they're said one at a time in a feed and on the map. <span class="where"><code>lib/writeChatter.ts</code>, <code>lib/chatterInput.ts</code>, <code>app/api/chatter/route.ts</code>, <code>prompts/town-chatter.md</code>, <code>components/TownChatter.tsx</code>, <code>lib/useConversation.ts</code></span></li>
     <li><span class="tag code">Code</span><strong>Averages and what-ifs</strong>The average resident against the real faces, sliders that re-run the town with no AI, and each person's tipping point. <span class="where"><code>lib/average.ts</code>, <code>lib/whatIf.ts</code>, <code>components/AverageStrip.tsx</code>, <code>components/WhatIf.tsx</code></span></li>
     <li><span class="tag code">Code</span><strong>You, resident #9</strong>Your answers, checked by zod, become a resident with your own character. The server rebuilds you from the answers, and they go to Claude only for your diary. <span class="where"><code>lib/yourself.ts</code>, <code>components/MoveIn.tsx</code></span></li>
+    <li><span class="tag code">Code</span><strong>A month in the life</strong>Each day's spare money as the change adds up evenly, and the day it runs out. <span class="where"><code>lib/month.ts</code>, <code>components/MonthInLife.tsx</code></span></li>
+    <li><span class="tag code">Code</span><strong>The Why? drawer</strong>A person's budget line by line and the two checks behind the verdict, from the engine's own category amounts (<code>applyLevers</code>) and lenses (<code>verdictLenses</code>). <span class="where"><code>lib/why.ts</code>, <code>components/WhyDrawer.tsx</code></span></li>
+    <li><span class="tag code">Code</span><strong>The phone map's focus</strong>Where to centre the map for a policy or a conversation, and how far to scroll. <span class="where"><code>lib/mapFocus.ts</code>, in <code>components/TownMap.tsx</code></span></li>
     <li><span class="tag code">Code</span><strong>The guided intro</strong>A first-visit scroll story built from the fares preset and the engine, with no AI calls. Skippable at every step and replayable from the header. <span class="where"><code>components/GuidedIntro.tsx</code></span></li>
   </ul>
 
@@ -111,6 +114,8 @@
       <tr><td>Someone’s day, or where people go when a policy lands</td><td><code>lib/townLife.ts</code>: <code>DAY</code>, <code>gatherings</code></td><td><code>tests/townLife.test.ts</code></td></tr>
       <tr><td>Slider ranges or tipping points</td><td><code>lib/whatIf.ts</code></td><td><code>tests/whatIf.test.ts</code></td></tr>
       <tr><td>The move-in form, its templates or what it checks</td><td><code>lib/yourself.ts</code>, <code>components/MoveIn.tsx</code></td><td><code>tests/yourself.test.ts</code></td></tr>
+      <tr><td>How the month plays out</td><td><code>lib/month.ts</code></td><td><code>tests/month.test.ts</code></td></tr>
+      <tr><td>The Why? drawer’s lines or wording</td><td><code>lib/why.ts</code></td><td><code>tests/why.test.ts</code></td></tr>
       <tr><td>The intro’s story</td><td><code>components/GuidedIntro.tsx</code></td><td>the page in a private window (first visit), at phone and desktop widths</td></tr>
       <tr><td>Colours and stripes</td><td><code>app/globals.css</code> (<code>--hazard</code>, verdict colours)</td><td>the page, at phone and desktop widths</td></tr>
     </tbody>
@@ -146,11 +151,11 @@ npm run eval:chatter           # live, about $0.06
 npm run build &amp;&amp; npm start     # production mode, for recording</pre>
   <details>
     <summary>Where the planning lives</summary>
-    <p><code>devpost/scope.md</code> (the kernel and the cuts), <code>devpost/prd.md</code> (behaviour and the Expected Preset Results), <code>devpost/spec.md</code> (stack, components, decisions) and <code>devpost/checklist.md</code> (the fifteen build slices and every revision the build made to the plan).</p>
+    <p><code>devpost/scope.md</code> (the kernel and the cuts), <code>devpost/prd.md</code> (behaviour and the Expected Preset Results), <code>devpost/spec.md</code> (stack, components, decisions) and <code>devpost/checklist.md</code> (the eighteen build slices and every revision the build made to the plan).</p>
   </details>
 
   <footer>
-    <p>A snapshot of the code at slice 15, <code>Add a guided intro</code> (16 October 2026); the code can drift after this. To reopen it, open <code>devpost/app-map.html</code> in any browser, or run <code>open devpost/app-map.html</code> on a Mac. It needs no network.</p>
+    <p>A snapshot of the code at slice 18, <code>Let the phone map follow the action</code> (17 October 2026); the code can drift after this. To reopen it, open <code>devpost/app-map.html</code> in any browser, or run <code>open devpost/app-map.html</code> on a Mac. It needs no network.</p>
   </footer>
 </main>
 </body>

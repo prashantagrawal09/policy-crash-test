@@ -179,7 +179,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Open Uncle Raju's and Nurul's drawers under fares and compare why they differ.
   Commit: `Show why each verdict landed`
 
-- [ ] **18. The phone map follows the action**
+- [x] **18. The phone map follows the action**
   Becomes usable: On narrow screens the map glides to where a policy lands and to whoever is speaking in the chatter, and a "Whole town" toggle fits the map to the screen. Wide screens don't change.
   Why now: The target user reads on a phone, where the map currently needs sideways scrolling to find the action.
   PRD ref: `prd.md > Phone Map Follows the Action`

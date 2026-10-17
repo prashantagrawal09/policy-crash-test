@@ -97,7 +97,7 @@ export function MonthInLife({ residents, results, faces, runId }: Props) {
           const gone = goneByDay(result);
           const ranOut = gone !== null && gone > 0 && day >= gone && result.verdict !== "unaffected";
           return (
-            <li key={resident.id} className="grid grid-cols-[6.5rem_minmax(0,1fr)_5.75rem] items-center gap-2 sm:grid-cols-[9rem_minmax(0,1fr)_8rem] sm:gap-3">
+            <li key={resident.id} className="grid grid-cols-[7.25rem_minmax(0,1fr)_5.75rem] items-center gap-2 sm:grid-cols-[9rem_minmax(0,1fr)_8rem] sm:gap-3">
               <span className="flex min-w-0 items-center gap-1.5">
                 <ResidentAvatar id={resident.id} look={resident.look} expression={ranOut ? "stressed" : (faces[resident.id] ?? "neutral")} size={28} className="shrink-0" />
                 <span className="truncate text-sm font-semibold">{resident.shortName}</span>
