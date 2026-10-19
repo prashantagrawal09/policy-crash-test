@@ -1,4 +1,5 @@
 import { leverText } from "@/lib/format";
+import { shownConfidence, tooLarge } from "@/lib/plausibility";
 import type { CrashRun } from "@/lib/useCrashTest";
 
 // "How the AI read this policy" or "How this preset is set up" (prd.md > How the Policy Was Read).
@@ -6,6 +7,9 @@ import type { CrashRun } from "@/lib/useCrashTest";
 export function PolicyPanel({ run }: { run: CrashRun }) {
   const isPreset = run.source.kind === "preset";
   const isWhatIf = run.source.kind === "whatif";
+  // Only the AI's own readings get the reality check; presets and what-ifs are chosen numbers.
+  const flags = run.source.kind === "typed" ? tooLarge(run.levers) : [];
+  const confidence = run.confidence && (flags.length > 0 ? shownConfidence(run.confidence, run.levers) : run.confidence);
 
   return (
     <aside className="flex flex-col rounded-lg border-2 border-ink bg-white p-5">
@@ -20,18 +24,23 @@ export function PolicyPanel({ run }: { run: CrashRun }) {
         ) : isWhatIf ? (
           <span className="rounded bg-hazard px-2 py-0.5 text-xs font-bold uppercase tracking-wider">Your what-if</span>
         ) : (
-          run.confidence && (
+          confidence && (
             <span
               className={`rounded px-2 py-0.5 text-xs font-bold uppercase tracking-wider ${
-                run.confidence === "low" ? "bg-feels text-ink" : "border border-ink/40 text-ink/70"
+                confidence === "low" ? "bg-feels text-ink" : "border border-ink/40 text-ink/70"
               }`}
             >
-              {run.confidence} confidence
+              {confidence} confidence
             </span>
           )
         )}
       </div>
       <p className="mt-2 text-sm text-ink/60">“{run.policyText}”</p>
+      {flags.length > 0 && (
+        <p role="note" className="mt-3 rounded-md border-2 border-ink bg-hazard/40 px-3 py-2 text-sm">
+          <strong>This looks large; check the assumptions.</strong> The AI read {flags.join(" and ")}.
+        </p>
+      )}
 
       <h3 className="mt-5 text-xs font-semibold uppercase tracking-wider text-ink/55">What changes</h3>
       {run.levers.length > 0 ? (

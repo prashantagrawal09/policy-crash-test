@@ -199,7 +199,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Type "GST goes up from 9% to 10% next year" and read the panel and Mdm Lim's card.
   Commit: `Read tax-rate changes correctly`
 
-- [ ] **20. A reality check on AI readings**
+- [x] **20. A reality check on AI readings**
   Becomes usable: When the AI reads a policy as implausibly large (a broad price change beyond ±5%, any change beyond ±30%, an income change beyond ±20%), the "How the AI read this policy" panel says "This looks large; check the assumptions" and shows confidence as low at most. Presets are unaffected.
   Why now: A second line of defence in tested code, so the next misreading is flagged even if the prompt misses it.
   PRD ref: `prd.md > How the Policy Was Read`
