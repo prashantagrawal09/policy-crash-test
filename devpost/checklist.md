@@ -219,7 +219,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Tap a preset on a phone-width window and use the nav.
   Commit: `Bring the people up the page`
 
-- [ ] **22. Make the recording easy**
+- [x] **22. Make the recording easy**
   Becomes usable: The map holds daylight while a run is on screen, so it never turns grey mid-demo (reduced motion unchanged). The README's demo script fits about 2 minutes: skim the intro, fares, Why? on Uncle Raju, petrol and play the month, then a rehearsed typed policy.
   Why now: The video is required, and this is the last change before recording.
   PRD ref: `prd.md > Living Town`

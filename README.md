@@ -100,12 +100,11 @@ npm run eval:chatter    # 4 presets × 2 runs on Claude Sonnet 5.5 (about $0.06)
 npm run build && npm start     # production mode: faster, no dev overlay
 ```
 
-Open http://localhost:3000 at desktop width (in a private window, to see the intro as a first-time visitor). Then:
-1. Scroll through the intro, or skip it.
-2. Tap "Bus and train fares rise 20%": the MRT and bus stop light up, the riders walk there, Chloe and Uncle Raju turn worried, and the neighbours start talking.
-3. Drag the what-if slider and watch the town re-run; note Uncle Raju's tipping point. Tap "Why?" on his card.
-4. Tap "Petrol prices rise 15%": the town flips. Faizal and Marcus head to the petrol station, and Faizal is hard hit. Play the month and watch his spare money run out on day 10.
-5. Move into town, then type your own policy, and click a pin on the map to jump to that person's card.
+Open http://localhost:3000 at desktop width, in a private window so the intro shows. The town holds midday while a run is on screen, so the map stays bright. A script of about 2 minutes:
+1. **Intro (15 s):** scroll through it quickly, then pick "Bus and train fares rise 20%" on the last step.
+2. **Fares (30 s):** the MRT and bus stop light up and the riders walk there; Chloe and Uncle Raju turn worried. Tap "Why?" on Uncle Raju: his $12 is 0.9% of his income but 12% of his spare money, and spare money decides.
+3. **Petrol (35 s):** scroll back to the top and tap "Petrol prices rise 15%": the page brings the summary into view, the town flips, and Faizal is hard hit. Jump to "Month" and play it: his spare money is gone by day 10.
+4. **Your own policy (30 s):** type "GST goes up from 9% to 10% next year" (rehearsed). The panel shows the rate going from 9% to 10%, a price rise of about 0.92%, and Mdm Lim loses $14 a month.
 
 ## Cost
 

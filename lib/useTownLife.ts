@@ -23,15 +23,16 @@ export function useReducedMotion(): boolean {
 
 const START_HOUR = 7;
 
-// The hour of the town's day (0–23), one hour every HOUR_MS. Stays at the start while still.
-export function useTownClock(running: boolean): number {
+// The hour of the town's day (0–23), one hour every HOUR_MS. While not running it shows `held`
+// (the start of the day by default).
+export function useTownClock(running: boolean, held = START_HOUR): number {
   const [hour, setHour] = useState(START_HOUR);
   useEffect(() => {
     if (!running) return;
     const timer = window.setInterval(() => setHour((h) => (h + 1) % 24), HOUR_MS);
     return () => window.clearInterval(timer);
   }, [running]);
-  return running ? hour : START_HOUR;
+  return running ? hour : held;
 }
 
 export interface Leg {

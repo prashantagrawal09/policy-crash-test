@@ -437,6 +437,7 @@ function TalkLine({ from, to }: { from: Point; to: Point }) {
 // The map's narrowest width. Below it the map scrolls sideways in its frame, and on those
 // screens the frame follows the action (prd.md > Phone Map Follows the Action).
 const STAGE_PX = 760;
+const DEMO_HOUR = 12; // the hour held while a run is on screen
 const FRAME_PADDING = 12; // px-3 on each side of the frame
 
 const HOME_PINS: Record<string, Point> = Object.fromEntries(Object.entries(HOMES).map(([id, home]) => [id, home.pin]));
@@ -448,7 +449,8 @@ export function TownMap({ residents, results, levers, runId, diaries, faces, spe
   // The living town: everyone follows their day until a policy reaches them, then goes to the
   // place behind it. With reduced motion the clock stops and everyone stays at home.
   const still = useReducedMotion();
-  const hour = useTownClock(!still);
+  // While a run is on screen the town holds midday, so the map never turns grey mid-demo.
+  const hour = useTownClock(!still && !results, results && !still ? DEMO_HOUR : undefined);
   const gathered = results && levers ? gatherings(residents, levers, results) : {};
   const homes = Object.fromEntries(residents.map((r) => [r.id, HOME_PINS[r.id]]));
   const desired = Object.fromEntries(residents.map((r) => [r.id, gathered[r.id]?.point ?? whereAt(r.id, hour)]));
