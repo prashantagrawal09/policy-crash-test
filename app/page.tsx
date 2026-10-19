@@ -9,6 +9,7 @@ import { MoveIn } from "@/components/MoveIn";
 import { PolicyInput } from "@/components/PolicyInput";
 import { PolicyPanel } from "@/components/PolicyPanel";
 import { ResidentCard } from "@/components/ResidentCard";
+import { SectionNav } from "@/components/SectionNav";
 import { StatusLine } from "@/components/StatusLine";
 import { TownChatter } from "@/components/TownChatter";
 import { TownMap } from "@/components/TownMap";
@@ -39,12 +40,25 @@ function showCard(residentId: string) {
   window.setTimeout(() => card.classList.remove("card-flash"), 1700);
 }
 
-// The one page, in PRD order: the guided intro (first visit), header, policy input, moving in, status and summary, average vs. the people, town map, town chatter, a month in the life, chart and panel, residents.
+// The one page (prd.md > Page Order and Navigation): the guided intro (first visit), header, policy input, moving in,
+// the section nav, summary, what-if, average vs. the people, residents, town map, town chatter, a month in the life, chart and panel.
 export default function Home() {
   const crash = useCrashTest();
   const town = crash.town; // the 8 residents, and you if you've moved in
   const [moveInOpen, setMoveInOpen] = useState(false);
   const [whyId, setWhyId] = useState<string | null>(null); // whose Why? drawer is open
+
+  // When a run lands, bring the summary into view if it isn't already (instantly with reduced motion).
+  const runId = crash.run?.runId ?? null;
+  useEffect(() => {
+    if (runId === null) return;
+    const summary = document.getElementById("summary");
+    if (!summary) return;
+    const { top } = summary.getBoundingClientRect();
+    if (top >= 56 && top <= window.innerHeight * 0.5) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    summary.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  }, [runId]);
   // The guided intro plays on a first visit (known only in the browser) and can be replayed.
   const [introOpen, setIntroOpen] = useState(false);
   useEffect(() => {
@@ -144,14 +158,18 @@ export default function Home() {
         busy={crash.busy}
       />
 
-      <StatusLine
-        phase={crash.phase}
-        results={results}
-        residentCount={town.length}
-        failedDiaries={crash.failedDiaries}
-        onRetryDiaries={crash.retryDiaries}
-        runId={crash.run?.runId ?? null}
-      />
+      {crash.run && <SectionNav />}
+
+      <div id="summary" className="scroll-mt-16">
+        <StatusLine
+          phase={crash.phase}
+          results={results}
+          residentCount={town.length}
+          failedDiaries={crash.failedDiaries}
+          onRetryDiaries={crash.retryDiaries}
+          runId={crash.run?.runId ?? null}
+        />
+      </div>
 
       {crash.run && levers && (
         <WhatIf
@@ -167,40 +185,7 @@ export default function Home() {
 
       {results && <AverageStrip residents={town} results={results} faces={faces} />}
 
-      <TownMap
-        residents={town}
-        results={results}
-        levers={levers}
-        runId={crash.run?.runId ?? null}
-        diaries={crash.run ? crash.diaries : {}}
-        faces={faces}
-        speaking={conversation.speaking}
-        onSelect={showCard}
-        onMoveIn={openMoveIn}
-      />
-
-      {crash.run && (
-        <TownChatter
-          residents={town}
-          status={crash.chatter.status}
-          received={crash.chatter.remarks.length}
-          spoken={conversation.spoken}
-          speaking={conversation.speaking}
-          faces={faces}
-          stale={exploring}
-        />
-      )}
-
-      {results && <MonthInLife residents={town} results={results} faces={faces} runId={crash.run?.runId ?? null} />}
-
-      {crash.run && (
-        <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-          <ChangeChart residents={town} results={results ?? crash.run.results} faces={faces} />
-          <PolicyPanel run={crash.run} />
-        </section>
-      )}
-
-      <section aria-label="Residents" className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section id="people" aria-label="Residents" className="mt-6 grid scroll-mt-16 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {town.map((resident) => (
           <ResidentCard
             key={resident.id}
@@ -216,6 +201,46 @@ export default function Home() {
           />
         ))}
       </section>
+
+      <div id="town" className="scroll-mt-16">
+      <TownMap
+        residents={town}
+        results={results}
+        levers={levers}
+        runId={crash.run?.runId ?? null}
+        diaries={crash.run ? crash.diaries : {}}
+        faces={faces}
+        speaking={conversation.speaking}
+        onSelect={showCard}
+        onMoveIn={openMoveIn}
+      />
+      </div>
+
+      {crash.run && (
+        <TownChatter
+          residents={town}
+          status={crash.chatter.status}
+          received={crash.chatter.remarks.length}
+          spoken={conversation.spoken}
+          speaking={conversation.speaking}
+          faces={faces}
+          stale={exploring}
+        />
+      )}
+
+      {results && (
+        <div id="month" className="scroll-mt-16">
+          <MonthInLife residents={town} results={results} faces={faces} runId={crash.run?.runId ?? null} />
+        </div>
+      )}
+
+      {crash.run && (
+        <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+          <ChangeChart residents={town} results={results ?? crash.run.results} faces={faces} />
+          <PolicyPanel run={crash.run} />
+        </section>
+      )}
+
 
       {(() => {
         const resident = town.find((r) => r.id === whyId);

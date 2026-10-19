@@ -209,7 +209,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: Type "Food prices double" and read the panel.
   Commit: `Flag readings that look too large`
 
-- [ ] **21. Bring the people up**
+- [x] **21. Bring the people up**
   Becomes usable: When a run lands, the summary scrolls into view. A sticky section nav (Summary · Town · People · Month) jumps around the long page, and the resident cards sit right after the average strip. In the 4-column layout the diary's reaction gets the full width, with the mood tag above it.
   Why now: Today the cards start about 3,000 px down at 1024 px wide (about 3,700 px at 375 px), so the people, the heart of the kernel, are the last thing anyone sees.
   PRD ref: `prd.md > Page Order and Navigation`
