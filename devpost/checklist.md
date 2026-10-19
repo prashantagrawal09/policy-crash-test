@@ -194,16 +194,18 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
 - [x] Early usable behavior explored — after slice 2: all 4 presets with cards, bars, chart and panel; approve the 8 everyday lines and the look before diaries and the parser build on them. Learner: "Looks good to me. Keep the everyday lines as they are."
 - [x] Final kick-the-tires exploration and feedback completed — after slice 6, in production mode. Learner: "I tried it in production mode: the demo, awkward inputs and phone width all work."
 - [x] Upgrade explored — after slice 8: the characters and the town map, before the polish slice. Learner: "The map and characters look great. No changes, go ahead with the polish slice."
-- [x] Living town explored — after slice 12, before chatter and the rest
+- [x] Living town explored — after slice 12, before chatter and the rest. Learner: "The living town looks great. No changes, go ahead with slice 13 (town chatter)."
 - [x] Final kick-the-tires after the upgrade — after slice 15, in production mode. Learner: "I tried it in production mode: the intro, all four presets, the sliders, moving in and phone width all work. No changes." Then asked for more before the freeze (slices 16–18).
-- [ ] Final kick-the-tires after slices 16–18 — in production mode, before the Oct 24 feature freeze
+- [x] Final kick-the-tires after slices 16–18 — in production mode, before the Oct 24 feature freeze. Learner: "I tried it in production mode: the month, the Why? drawers and the phone map all work. No changes, go ahead and finish the final review."
 
 ## Final Review
 
 No changes needed: the learner tried the demo, awkward inputs and phone width in production mode and asked for no revisions.
 
 - [x] Final review complete — feedback resolved and learner confirms ready to ship. Learner: "It's ready to ship, no changes needed."
-- [ ] Upgrade final review complete — feedback resolved and learner confirms the upgraded app is ready to ship
+Upgrade (slices 7–18): no changes needed. The learner tried it in production twice, after slice 15 and after slice 18, and asked for no revisions. Checks at the end: 145 offline tests, a clean production build, the production demo end to end, the chatter eval 8/8, and the diary eval 7/8 then 2/2 on a re-run of the one failed run, which was a dropped extra line, not a content check.
+
+- [x] Upgrade final review complete — feedback resolved and learner confirms the upgraded app is ready to ship. Learner: "No changes, go ahead and finish the final review."
 
 ## Code Tour and App Map
 
@@ -211,6 +213,7 @@ No changes needed: the learner tried the demo, awkward inputs and phone width in
 - [x] Optional edit and transfer reflection addressed — edit not applicable; transfer question offered at the wrap-up
 - [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 - [x] `devpost/app-map.html` refreshed for the characters and the town map (no repeat of the learning activity); snapshot of `58ef992`, new anchors checked
+- [x] `devpost/app-map.html` refreshed for slices 10–18 (no repeat of the learning activity): new pieces, two flow steps for the chatter, new "start here" rows, and the chatter eval added to the practice to reuse. Snapshot at slice 18; all 65 paths and 30 function names checked, still no scripts or network
 
 Activity and evidence: Prior practice, connected at the wrap-up. In slice 5 the first live eval run failed (parser 9/10, diaries 4/8). Reading the actual outputs showed equivalent fields, quoted policy amounts and correct arithmetic, not wrong numbers on screen. The learner chose to fix the eval definitions and give the diary writer the engine's spare money after, instead of changing the prompts; the re-run passed 10/10 and 8/8. Evidence: Revisions above, `evals/parser.eval.ts`, `evals/diaries.eval.ts`, `lib/diaryInput.ts` (`residentBlock`).
 Route and stops: A reference route in the app map, not toured: `lib/useCrashTest.ts` (`startRun`), then `lib/engine.ts` (`verdict`), then `tests/presets.test.ts` ("Uncle Raju feels it").
@@ -235,3 +238,4 @@ Activity mode: Prior practice connected (focused alternative), plus the app map.
 - Town chatter stays among the 8 residents even after you move in. `prd.md > Add Yourself` says your answers go to Claude only for your diary, so slice 14 sends them only with the diary request instead of giving chatter a resident list.
 - "Move into town" also asks how many people live at home. Each diary's input states the household size, and guessing it from "children at home" could have put the wrong family into your diary.
 - After the upgrade's kick-the-tires (no changes), the learner asked for more before the freeze ("we still hv time, do something more"). From six proposed ideas they chose three, added as slices 16–18: a month in the life, a Why? budget drawer, and a phone map that follows the action. The upgrade's final review moved to after slice 18. `prd.md`, `spec.md` and `scope.md` were updated with the learner's agreement. The engine gains outputs (each category's before and after, both verdict checks) but no existing number changes.
+- The month's day-30 check now reads "spare money plus the monthly change, plus any one-off". A one-off lands in full on day 1, as cash in hand, while the card counts it as a twelfth a month, so "matches spare money after" was untrue for payout recipients. Corrected in `prd.md` and slice 16 before it was built.
