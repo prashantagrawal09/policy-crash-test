@@ -236,7 +236,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
 - [x] Upgrade explored — after slice 8: the characters and the town map, before the polish slice. Learner: "The map and characters look great. No changes, go ahead with the polish slice."
 - [x] Living town explored — after slice 12, before chatter and the rest. Learner: "The living town looks great. No changes, go ahead with slice 13 (town chatter)."
 - [x] Final kick-the-tires after the upgrade — after slice 15, in production mode. Learner: "I tried it in production mode: the intro, all four presets, the sliders, moving in and phone width all work. No changes." Then asked for more before the freeze (slices 16–18).
-- [ ] Final kick-the-tires after slices 19–22 — in production mode, before the Oct 24 feature freeze
+- [x] Final kick-the-tires after slices 19–22 — in production mode, before the Oct 24 feature freeze. Learner: "I rehearsed the README script in production: the GST fix, the flag, the page order, the nav and the daylight all work. No changes."
 - [x] Final kick-the-tires after slices 16–18 — in production mode, before the Oct 24 feature freeze. Learner: "I tried it in production mode: the month, the Why? drawers and the phone map all work. No changes, go ahead and finish the final review."
 
 ## Final Review
@@ -248,7 +248,7 @@ Upgrade (slices 7–18): no changes needed. The learner tried it in production t
 
 - [x] Upgrade final review complete — feedback resolved and learner confirms the upgraded app is ready to ship. Learner: "No changes, go ahead and finish the final review."
 
-- [ ] Post-review fixes final review complete — learner confirms slices 19–22 are ready to ship
+- [x] Post-review fixes final review complete — learner confirms slices 19–22 are ready to ship. Checks: 156 offline tests, the parser eval 15/15 with size bands ($0.015), a clean production build, and the README demo script run end to end in production. Learner: "No changes. Let's get back to 6-ship."
 
 ## Code Tour and App Map
 
