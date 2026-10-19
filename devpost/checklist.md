@@ -189,6 +189,46 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: On a phone-width window, run petrol and childcare, watch the map follow, and try "Whole town".
   Commit: `Let the phone map follow the action`
 
+- [ ] **19. Read tax-rate changes correctly**
+  Becomes usable: "GST goes up from 9% to 10%" raises prices by about 0.92%, not 11.1%. Mdm Lim loses about $14 a month instead of $170, and the summary stops saying "6 hit hard".
+  Why now: It's a wrong number on screen, the one thing the kernel promises never happens. Found in the post-review end-to-end check (3 of 3 runs).
+  PRD ref: `prd.md > Tax-Rate Changes`
+  Spec ref: `spec.md > Components` (Post-review fixes: tax-rate lever)
+  Build: Add a `tax_rate_change` lever kind (from and to rates); the engine turns it into a price change of (1 + to) / (1 + from) − 1, with engine tests (GST 9 → 10 gives +0.917%). Show the learner the exact `prompts/parse-policy.md` diff (a rule and an example) and get their OK before changing it. Give every parser eval case a size band (fares 10 must be exactly 10; the GST case between 0.8 and 1.0) and add real headlines: GST 9 → 10, a CPF contribution-rate change, a U-Save or utilities rebate, a carbon tax passed through to electricity, and conservancy charges. Keep 3 runs a case; measure the cost of one run first.
+  Verify (mechanical): `npm test` passes, including the GST factor and the prompt examples; `npm run eval:parser` passes with size bands on every case; in the browser the GST headline gives Mdm Lim about −$14.
+  Learner check: Type "GST goes up from 9% to 10% next year" and read the panel and Mdm Lim's card.
+  Commit: `Read tax-rate changes correctly`
+
+- [ ] **20. A reality check on AI readings**
+  Becomes usable: When the AI reads a policy as implausibly large (a broad price change beyond ±5%, any change beyond ±30%, an income change beyond ±20%), the "How the AI read this policy" panel says "This looks large; check the assumptions" and shows confidence as low at most. Presets are unaffected.
+  Why now: A second line of defence in tested code, so the next misreading is flagged even if the prompt misses it.
+  PRD ref: `prd.md > How the Policy Was Read`
+  Spec ref: `spec.md > Components` (Post-review fixes: plausibility guard)
+  Build: Add `lib/plausibility.ts` with `tests/plausibility.test.ts` (each threshold, just inside and just outside); show the flag in `PolicyPanel` and cap the confidence shown.
+  Verify (mechanical): `npm test` passes; `npm run build` passes; in the browser an implausible typed policy shows the flag and a preset never does.
+  Learner check: Type "Food prices double" and read the panel.
+  Commit: `Flag readings that look too large`
+
+- [ ] **21. Bring the people up**
+  Becomes usable: When a run lands, the summary scrolls into view. A sticky section nav (Summary · Town · People · Month) jumps around the long page, and the resident cards sit right after the average strip. In the 4-column layout the diary's reaction gets the full width, with the mood tag above it.
+  Why now: Today the cards start about 3,000 px down at 1024 px wide (about 3,700 px at 375 px), so the people, the heart of the kernel, are the last thing anyone sees.
+  PRD ref: `prd.md > Page Order and Navigation`
+  Spec ref: `spec.md > Components` (Post-review fixes: page order and nav)
+  Build: New page order (the learner confirms it), a `SectionNav` component, scroll-to-summary on each run (instant with reduced motion), and the diary header layout.
+  Verify (mechanical): `npm test` and `npm run build` pass; in the browser at 375 and 1024 px the summary is in view after tapping a preset, the nav jumps to each section, and nothing scrolls sideways.
+  Learner check: Tap a preset on a phone-width window and use the nav.
+  Commit: `Bring the people up the page`
+
+- [ ] **22. Make the recording easy**
+  Becomes usable: The map holds daylight while a run is on screen, so it never turns grey mid-demo (reduced motion unchanged). The README's demo script fits about 2 minutes: skim the intro, fares, Why? on Uncle Raju, petrol and play the month, then a rehearsed typed policy.
+  Why now: The video is required, and this is the last change before recording.
+  PRD ref: `prd.md > Living Town`
+  Spec ref: `spec.md > Where It Runs and How Someone Tries It`
+  Build: Hold the clock at daytime while results are shown, and rewrite the README's "Recording the demo".
+  Verify (mechanical): `npm test` and `npm run build` pass; in the browser the clock and tint stay at day during a run and resume after; the production demo runs end to end following the README script.
+  Learner check: Rehearse the README script once in production mode.
+  Commit: `Make the demo easy to record`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 2: all 4 presets with cards, bars, chart and panel; approve the 8 everyday lines and the look before diaries and the parser build on them. Learner: "Looks good to me. Keep the everyday lines as they are."
@@ -196,6 +236,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
 - [x] Upgrade explored — after slice 8: the characters and the town map, before the polish slice. Learner: "The map and characters look great. No changes, go ahead with the polish slice."
 - [x] Living town explored — after slice 12, before chatter and the rest. Learner: "The living town looks great. No changes, go ahead with slice 13 (town chatter)."
 - [x] Final kick-the-tires after the upgrade — after slice 15, in production mode. Learner: "I tried it in production mode: the intro, all four presets, the sliders, moving in and phone width all work. No changes." Then asked for more before the freeze (slices 16–18).
+- [ ] Final kick-the-tires after slices 19–22 — in production mode, before the Oct 24 feature freeze
 - [x] Final kick-the-tires after slices 16–18 — in production mode, before the Oct 24 feature freeze. Learner: "I tried it in production mode: the month, the Why? drawers and the phone map all work. No changes, go ahead and finish the final review."
 
 ## Final Review
@@ -206,6 +247,8 @@ No changes needed: the learner tried the demo, awkward inputs and phone width in
 Upgrade (slices 7–18): no changes needed. The learner tried it in production twice, after slice 15 and after slice 18, and asked for no revisions. Checks at the end: 145 offline tests, a clean production build, the production demo end to end, the chatter eval 8/8, and the diary eval 7/8 then 2/2 on a re-run of the one failed run, which was a dropped extra line, not a content check.
 
 - [x] Upgrade final review complete — feedback resolved and learner confirms the upgraded app is ready to ship. Learner: "No changes, go ahead and finish the final review."
+
+- [ ] Post-review fixes final review complete — learner confirms slices 19–22 are ready to ship
 
 ## Code Tour and App Map
 
@@ -239,3 +282,4 @@ Activity mode: Prior practice connected (focused alternative), plus the app map.
 - "Move into town" also asks how many people live at home. Each diary's input states the household size, and guessing it from "children at home" could have put the wrong family into your diary.
 - After the upgrade's kick-the-tires (no changes), the learner asked for more before the freeze ("we still hv time, do something more"). From six proposed ideas they chose three, added as slices 16–18: a month in the life, a Why? budget drawer, and a phone map that follows the action. The upgrade's final review moved to after slice 18. `prd.md`, `spec.md` and `scope.md` were updated with the learner's agreement. The engine gains outputs (each category's before and after, both verdict checks) but no existing number changes.
 - The month's day-30 check now reads "spare money plus the monthly change, plus any one-off". A one-off lands in full on day 1, as cash in hand, while the card counts it as a twelfth a month, so "matches spare money after" was untrue for payout recipients. Corrected in `prd.md` and slice 16 before it was built.
+- After the upgrade's final review, an end-to-end review (production server, 1024 and 375 px, from the planning session) found a wrong number: "GST goes up from 9% to 10%" was read as +11.1% on all taxable spending (3 of 3 runs; reproduced here: 11.1, confidence high). The parser eval checked only target and sign. The learner approved four fixes, added as slices 19–22: tax-rate levers with size-banded evals, a plausibility guard, bringing the people up the page, and an easier recording. 6-ship is paused until they're done.

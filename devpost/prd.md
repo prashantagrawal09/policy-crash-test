@@ -146,6 +146,21 @@ Source: `scope.md > The Unique Kernel` ("averages hide people").
 - [ ] At 375 px, the petrol station is in view after the petrol preset, and the childcare centre after the childcare preset.
 - [ ] "Whole town" fits the map on screen without sideways scrolling.
 
+### Tax-Rate Changes
+- A policy that moves a tax rate ("GST goes up from 9% to 10%") changes prices by the ratio of the new rate to the old, not by the change in the rate itself: (1 + 10%) / (1 + 9%) − 1 ≈ +0.92%. The AI only reports the two rates; tested code works out the price change.
+- If the AI reads a change as implausibly large (a broad price change beyond ±5%, any change beyond ±30%, an income change beyond ±20%), the "How the AI read this policy" panel says "This looks large; check the assumptions" and shows confidence as low at most. Presets are never flagged.
+
+- [ ] "GST goes up from 9% to 10% next year" gives Mdm Lim about −$14 a month.
+- [ ] Every parser eval case checks the size of each change, not just its direction.
+
+### Page Order and Navigation
+- When a run lands, the summary scrolls into view (instantly with reduced motion).
+- A sticky section nav (Summary · Town · People · Month) jumps to each part of the page.
+- The resident cards come right after the average strip, before the map, chatter, month and chart. In the 4-column layout, a diary's reaction gets the full width, with its mood tag above it.
+- While a run is on screen the map holds daylight, so it never turns grey mid-demo.
+
+- [ ] At 375 px, the summary is in view after tapping a preset.
+
 ### Monthly Change Chart
 - One bar per resident, in card order, showing each person's monthly change from a zero line: losses one way, gains the other.
 - Bars use the verdict colours, so a short amber bar (Raju, −$12) sits beside a longer grey one (Nurul, −$40).
@@ -254,6 +269,7 @@ Computed from the rules above, using the same check that shaped the demo.
 - Illustrated characters whose faces react, and the town map (an upgrade agreed after the build).
 - Average vs. the people, what-if sliders with tipping points, a living town, town chatter, adding yourself, and a guided intro (second upgrade, feature freeze Oct 24).
 - A month in the life, a Why? budget drawer, and a phone map that follows the action (third upgrade, same freeze).
+- Post-review fixes: tax-rate changes read correctly, a plausibility flag on AI readings, the people brought up the page, and an easier recording (same freeze).
 - The waiting, failure and empty states under **States and Boundaries**.
 
 ## Deferred From the POC

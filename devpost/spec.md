@@ -221,6 +221,10 @@ PRD ref: `prd.md > The Core Journey`, `prd.md > States and Boundaries`.
   - **`MonthInLife`** with `lib/month.ts`: each day's spare money as the monthly change accumulates evenly, a one-off on day 1, and the day spare money runs out, all from the engine's cents. Implements `prd.md > A Month in the Life`.
   - **`WhyDrawer`** with `lib/why.ts`: a native `<dialog>` showing the budget lines before and after and both verdict checks. `lib/engine.ts` additionally returns each category's before and after (`applyLevers`) and both checks (`verdictLenses`); every existing result is unchanged. Implements `prd.md > Why? Budget Drawer`.
   - **Map focus** in `TownMap` with `lib/mapFocus.ts`: on narrow screens the map's scroll frame glides to the policy's crowd and to the current speaker, plus a "Whole town" fit toggle. Implements `prd.md > Phone Map Follows the Action`.
+- **Post-review fixes** (same Oct 24 freeze):
+  - **Tax-rate lever:** a `tax_rate_change` kind carrying the old and new rates; `lib/engine.ts` applies it as a price change of (1 + to) / (1 + from) − 1. The parser prompt gains a rule and an example (learner-approved diff). Parser eval cases gain size bands and real headlines. Implements `prd.md > Tax-Rate Changes`.
+  - **Plausibility guard:** `lib/plausibility.ts` flags implausibly large levers from the parser; `PolicyPanel` shows the flag and caps the confidence shown.
+  - **Page order and nav:** cards after the average strip, a sticky `SectionNav`, scroll-to-summary on each run, and daylight held while a run is shown. Implements `prd.md > Page Order and Navigation`.
 
 ### Tests
 Vitest. Run them with `npm test`; they work offline and need no key.
