@@ -1,4 +1,5 @@
 import type { ResidentResult } from "@/lib/engine";
+import { effectivePercent } from "@/lib/engine";
 import type { Lever } from "@/lib/schemas";
 
 // Pure layout and logic for the town map (prd.md > Town Map). The map shows no numbers of its
@@ -79,8 +80,9 @@ export const TARGET_LANDMARKS: Record<Lever["target"], Landmark[]> = {
 export function litLandmarks(levers: Lever[]): Map<Landmark, Direction> {
   const lit = new Map<Landmark, Direction>();
   for (const lever of levers) {
-    if (lever.kind === "one_off_payment" || lever.value === 0) continue;
-    const direction: Direction = lever.value > 0 ? "up" : "down";
+    const change = effectivePercent(lever);
+    if (lever.kind === "one_off_payment" || change === 0) continue;
+    const direction: Direction = change > 0 ? "up" : "down";
     for (const landmark of TARGET_LANDMARKS[lever.target]) {
       const before = lit.get(landmark);
       lit.set(landmark, before && before !== direction ? "mixed" : direction);

@@ -1,4 +1,4 @@
-import type { ResidentResult, Verdict } from "@/lib/engine";
+import { effectivePercent, type ResidentResult, type Verdict } from "@/lib/engine";
 import type { Eligibility, HousingType, Lever, Tag } from "@/lib/schemas";
 
 // Pure display formatting. prd.md > Expected Preset Results is its test.
@@ -313,6 +313,12 @@ export function leverText(lever: Lever): string {
   const direction = value >= 0 ? "up" : "down";
   let change: string;
 
+  if (kind === "tax_rate_change") {
+    const change = effectivePercent(lever);
+    const by = `${Math.abs(change) < 10 ? Math.abs(change).toFixed(2).replace(/\.?0+$/, "") : Math.round(Math.abs(change))}%`;
+    const what = target === "income" ? "Take-home income goes" : `${TARGET_LABELS[target]} go`;
+    return `${what} ${change >= 0 ? "up" : "down"} ${by} (a tax rate going from ${lever.fromRate}% to ${value}%), for ${forWhom(lever.eligibility)}`;
+  }
   if (kind === "one_off_payment") {
     if (target === "income") change = `A one-off ${value >= 0 ? "payment" : "charge"} of ${money(amount)}`;
     else change = `A one-off ${value <= 0 ? "rebate" : "charge"} of ${money(amount)} on ${TARGET_LABELS[target].toLowerCase()}`;

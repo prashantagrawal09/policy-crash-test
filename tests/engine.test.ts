@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { RESIDENTS } from "@/data/residents";
-import { isEligible, runResident, spareMoney } from "@/lib/engine";
+import { effectivePercent, isEligible, runResident, runTown, spareMoney } from "@/lib/engine";
+import { cardText, summaryLine } from "@/lib/format";
+import { LeverSchema, type Lever } from "@/lib/schemas";
 import { gain, lever, loss, person, resident } from "./helpers";
 
 describe("spare money", () => {
@@ -151,5 +153,31 @@ describe("verdict rules", () => {
     const p = person(1000, 500);
     expect(runResident(p, [lever("one_off_payment", "income", 120)]).verdict).toBe("barely_affected"); // exactly +1%
     expect(runResident(p, [lever("one_off_payment", "income", 120.12)]).verdict).toBe("better_off");
+  });
+});
+
+describe("tax-rate changes (prd.md > Tax-Rate Changes)", () => {
+  const gst = (from: number, to: number): Lever => ({ ...lever("tax_rate_change", "all_taxable_spending", to), fromRate: from });
+
+  it("turn GST from 9% to 10% into a 0.917% price rise, not 11.1%", () => {
+    expect(effectivePercent(gst(9, 10))).toBeCloseTo(0.9174, 4);
+    const lim = runResident(resident("lim"), [gst(9, 10)]);
+    expect(cardText(lim).bigNumber).toBe("−$14");
+    expect(summaryLine(runTown(RESIDENTS, [gst(9, 10)]))).toBe("1 hit hard, 7 barely affected");
+  });
+
+  it("turn an income-tax rise into the take-home change", () => {
+    const incomeTax: Lever = { ...lever("tax_rate_change", "income", 17, { minMonthlyIncome: 5000 }), fromRate: 15 };
+    expect(effectivePercent(incomeTax)).toBeCloseTo(-2.3529, 4);
+  });
+
+  it("go the other way for a cut, and do nothing when the rate stays put", () => {
+    expect(effectivePercent(gst(9, 8))).toBeLessThan(0);
+    expect(runResident(resident("lim"), [gst(9, 9)]).verdict).toBe("unaffected");
+  });
+
+  it("need both rates", () => {
+    expect(LeverSchema.safeParse(lever("tax_rate_change", "all_taxable_spending", 10)).success).toBe(false);
+    expect(LeverSchema.safeParse(gst(9, 10)).success).toBe(true);
   });
 });

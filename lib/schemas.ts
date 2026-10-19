@@ -55,16 +55,24 @@ export const EligibilitySchema = z.object({
 });
 export type Eligibility = z.infer<typeof EligibilitySchema>;
 
-export const LEVER_KINDS = ["percent_change", "fixed_monthly_change", "one_off_payment"] as const;
+export const LEVER_KINDS = ["percent_change", "fixed_monthly_change", "one_off_payment", "tax_rate_change"] as const;
 export const LEVER_TARGETS = [...CATEGORIES, "income", "all_taxable_spending"] as const;
 
-export const LeverSchema = z.object({
-  kind: z.enum(LEVER_KINDS),
-  target: z.enum(LEVER_TARGETS),
-  value: z.number(),
-  eligibility: EligibilitySchema,
-  description: z.string(),
-});
+// tax_rate_change: a tax rate moving from `fromRate` to `value` (both in %). The AI reports the two
+// rates; the engine works out what that does to prices or take-home pay (prd.md > Tax-Rate Changes).
+export const LeverSchema = z
+  .object({
+    kind: z.enum(LEVER_KINDS),
+    target: z.enum(LEVER_TARGETS),
+    value: z.number(),
+    fromRate: z.number().optional(),
+    eligibility: EligibilitySchema,
+    description: z.string(),
+  })
+  .refine(
+    (l) => l.kind !== "tax_rate_change" || (l.fromRate !== undefined && l.fromRate >= 0 && l.fromRate < 100 && l.value >= 0 && l.value < 100),
+    { message: "A tax-rate change needs fromRate and value between 0 and 100" },
+  );
 export type Lever = z.infer<typeof LeverSchema>;
 
 export const ParseResultSchema = z.object({

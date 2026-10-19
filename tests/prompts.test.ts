@@ -11,8 +11,8 @@ const diaryPrompt = readFileSync("prompts/write-diaries.md", "utf8");
 const examples = [...parsePrompt.matchAll(/Output: ([\s\S]*?)(?=\n\s*\n|\nInput:|$)/g)].map((m) => m[1].trim());
 
 describe("parser prompt examples", () => {
-  it("has the four examples", () => {
-    expect(examples).toHaveLength(4);
+  it("has the five examples", () => {
+    expect(examples).toHaveLength(5);
   });
 
   it.each(examples.map((example, i) => [i + 1, example]))("example %i is valid JSON that passes the ParseResult schema", (_n, example) => {
@@ -47,7 +47,8 @@ describe("structured-output schema sent to the parser", () => {
     const schema = z.toJSONSchema(ParseResultSchema) as { properties: Record<string, any> };
     const lever = schema.properties.levers.items;
     expect(lever.properties.target.enum).toEqual([...LEVER_TARGETS]);
-    expect(lever.properties.kind.enum).toEqual(["percent_change", "fixed_monthly_change", "one_off_payment"]);
+    expect(lever.properties.kind.enum).toEqual(["percent_change", "fixed_monthly_change", "one_off_payment", "tax_rate_change"]);
+    expect(lever.required).not.toContain("fromRate"); // only tax-rate changes carry it
     expect(schema.properties.confidence.enum).toEqual(["high", "medium", "low"]);
     expect(lever.additionalProperties).toBe(false);
     expect(lever.properties.eligibility.additionalProperties).toBe(false);

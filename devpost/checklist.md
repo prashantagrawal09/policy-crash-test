@@ -189,7 +189,7 @@ Build mode: fast (chosen after slice 1: "let's build further"; can switch any ti
   Learner check: On a phone-width window, run petrol and childcare, watch the map follow, and try "Whole town".
   Commit: `Let the phone map follow the action`
 
-- [ ] **19. Read tax-rate changes correctly**
+- [x] **19. Read tax-rate changes correctly**
   Becomes usable: "GST goes up from 9% to 10%" raises prices by about 0.92%, not 11.1%. Mdm Lim loses about $14 a month instead of $170, and the summary stops saying "6 hit hard".
   Why now: It's a wrong number on screen, the one thing the kernel promises never happens. Found in the post-review end-to-end check (3 of 3 runs).
   PRD ref: `prd.md > Tax-Rate Changes`

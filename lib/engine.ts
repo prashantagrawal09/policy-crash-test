@@ -55,6 +55,15 @@ export interface AppliedLevers {
   taxableFixedCents: number;
 }
 
+// The percentage a lever moves its target by. A tax-rate change becomes the ratio of the rates:
+// a consumption tax from 9% to 10% raises prices by 1.10 / 1.09 − 1 ≈ +0.917%; an income tax
+// from 15% to 17% changes take-home pay by 0.83 / 0.85 − 1 ≈ −2.35%.
+export function effectivePercent(lever: Lever): number {
+  if (lever.kind !== "tax_rate_change") return lever.value;
+  const from = lever.fromRate ?? lever.value;
+  return lever.target === "income" ? ((100 - lever.value) / (100 - from) - 1) * 100 : ((100 + lever.value) / (100 + from) - 1) * 100;
+}
+
 // Each percent change applies to the pre-policy amount, so lever order never matters.
 // Each lever's effect is rounded to the cent. A cut can't take a bill or an income below $0.
 export function applyLevers(resident: Resident, levers: Lever[]): AppliedLevers {
@@ -69,21 +78,23 @@ export function applyLevers(resident: Resident, levers: Lever[]): AppliedLevers 
 
   for (const lever of levers) {
     if (!isEligible(resident, lever.eligibility)) continue;
-    const { kind, target, value } = lever;
+    const { kind, target } = lever;
+    const value = effectivePercent(lever); // a tax-rate change acts as the percent change it causes
+    const percent = kind === "percent_change" || kind === "tax_rate_change";
 
     if (kind === "one_off_payment") {
       // Paid into income it's money in; on a spending target, negative means cheaper (a rebate).
       oneOffCents += target === "income" ? toCents(value) : -toCents(value);
     } else if (target === "income") {
-      incomeDelta += kind === "percent_change" ? percentOf(baseIncome, value) : toCents(value);
+      incomeDelta += percent ? percentOf(baseIncome, value) : toCents(value);
     } else if (target === "all_taxable_spending") {
-      if (kind === "percent_change") {
+      if (percent) {
         for (const c of TAXABLE_CATEGORIES) delta[c] += percentOf(base[c], value);
       } else {
         taxableFixedDelta += toCents(value);
       }
     } else {
-      delta[target] += kind === "percent_change" ? percentOf(base[target], value) : toCents(value);
+      delta[target] += percent ? percentOf(base[target], value) : toCents(value);
     }
   }
 

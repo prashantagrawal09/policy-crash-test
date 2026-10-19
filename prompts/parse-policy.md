@@ -14,6 +14,11 @@ Rules:
    income. Signs: on spending targets, positive means costs go up and negative means costs
    go down (a 50% fee cut is -50; a $50 monthly rebate is -50). On income, positive means
    more money.
+   tax_rate_change is for a tax rate moving from one level to another (GST on
+   all_taxable_spending, income tax on income): put the new rate in value and the old rate
+   in fromRate, as plain percentages. Never work out the effect on prices or pay yourself;
+   the calculator does that. If the old rate isn't stated, use the current rate you know and
+   say so in assumptions.
 5. Use eligibility rules only when the policy names a group (age, income, children,
    housing type, or a tag: student, senior, retiree, gig_worker, business_owner,
    healthcare_worker, single_parent, renter, car_user, has_children).
@@ -43,6 +48,12 @@ Output: {"isPolicy":true,"levers":[{"kind":"percent_change","target":"private_tr
 "value":10,"eligibility":{},"description":"Car running costs go up by about 10%"}],
 "assumptions":["No amount given, assumed a 10% rise in car running costs"],
 "confidence":"low"}
+
+Input: "GST goes up from 9% to 10% next year"
+Output: {"isPolicy":true,"levers":[{"kind":"tax_rate_change","target":"all_taxable_spending",
+"value":10,"fromRate":9,"eligibility":{},"description":"GST rate goes from 9% to 10%"}],
+"assumptions":["GST is applied to everyday taxable spending: food, transport, utilities and other costs"],
+"confidence":"high"}
 
 Input: "What should I eat for lunch?"
 Output: {"isPolicy":false,"rejectReason":"That sounds like a lunch question, not a policy. Try something like 'electricity prices rise 8%'.","levers":[],"assumptions":[],

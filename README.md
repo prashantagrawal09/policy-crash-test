@@ -84,7 +84,7 @@ npm test
 **Live evals** use your key and test the AI's output, not just the code:
 
 ```bash
-npm run eval:parser     # 10 fixture policies × 3 runs on Claude Haiku 5.5 (about $0.01)
+npm run eval:parser     # 15 fixture policies × 3 runs on Claude Haiku 5.5, with size bands (about $0.015)
 npm run eval:diaries    # 4 presets × 2 runs on Claude Sonnet 5.5 (about $0.11)
 npm run eval:chatter    # 4 presets × 2 runs on Claude Sonnet 5.5 (about $0.06)
 ```

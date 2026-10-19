@@ -1,4 +1,4 @@
-import { runResident, type Verdict } from "@/lib/engine";
+import { effectivePercent, runResident, type Verdict } from "@/lib/engine";
 import { money, signedMoney, VERDICT_LABELS } from "@/lib/format";
 import type { Lever, Resident } from "@/lib/schemas";
 
@@ -18,6 +18,10 @@ export function sliderSpec(lever: Lever): SliderSpec {
     const reach = Math.max(100, Math.ceil((size * 2) / 10) * 10);
     return { min: Math.min(-100, lever.value), max: reach, step: 1 };
   }
+  if (lever.kind === "tax_rate_change") {
+    // The new rate, in half-point steps.
+    return { min: 0, max: Math.max(30, Math.ceil(lever.value * 2)), step: 0.5 };
+  }
   if (lever.kind === "one_off_payment") {
     const reach = Math.max(1000, Math.ceil((size * 3) / 100) * 100);
     return { min: Math.min(0, lever.value), max: reach, step: 1 };
@@ -34,6 +38,7 @@ export function withValue(levers: Lever[], index: number, value: number): Lever[
 export function formatLeverValue(lever: Lever, value: number): string {
   if (lever.kind === "percent_change") return `${value > 0 ? "+" : value < 0 ? "−" : ""}${Math.abs(value)}%`;
   if (lever.kind === "one_off_payment") return `${money(value)} one-off`;
+  if (lever.kind === "tax_rate_change") return `${value}% rate`;
   return `${signedMoney(value)} a month`;
 }
 
@@ -49,8 +54,9 @@ export function tippingPoint(resident: Resident, levers: Lever[]): TippingPoint 
   if (levers.length !== 1) return null;
   const [lever] = levers;
   const now = runResident(resident, levers).verdict;
-  const { min, max } = sliderSpec(lever);
-  const direction = lever.value < 0 ? -1 : 1;
+  const { min, max, step } = sliderSpec(lever);
+  // Push further the way the policy goes: for a tax rate, the way its rate moves.
+  const direction = (lever.kind === "tax_rate_change" ? effectivePercent(lever) : lever.value) < 0 ? -step : step;
   for (let value = lever.value + direction; direction > 0 ? value <= max : value >= min; value += direction) {
     const verdict = runResident(resident, withValue(levers, 0, value)).verdict;
     if (verdict !== now) return { verdict, at: value, label: `${VERDICT_LABELS[verdict]} from ${formatLeverValue(lever, value)}` };
