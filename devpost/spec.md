@@ -72,7 +72,7 @@ Versions were checked on npm on 2026-10-15. The build installs the latest releas
 - **Offline tests:** `npm test` (no key, no cost).
 - **Live evals:** `npm run eval:parser` and `npm run eval:diaries` (use your key; cost under **External Services and Dependencies**).
 - **Recording the demo:** `npm run build && npm start`, then open http://localhost:3000 in a fresh browser window at desktop width. Production mode is faster and has no dev overlay. Rehearse the typed policy first (`prd.md > Open Questions`).
-- **Submission:** the demo video plus the public GitHub repository. Deployment is optional and not chosen. If wanted later, Vercel deploys a Next.js app from the repository with `ANTHROPIC_API_KEY` set as a project variable. A public deploy would let anyone spend your key through the two routes, so add a simple rate limit first (decide in `6-ship`).
+- **Submission:** the demo video plus the public GitHub repository: https://github.com/prashantagrawal09/policy-crash-test (public since 2026-10-20). Demo video: to be recorded. Deployment is optional and not chosen. If wanted later, Vercel deploys a Next.js app from the repository with `ANTHROPIC_API_KEY` set as a project variable. A public deploy would let anyone spend your key through the two routes, so add a simple rate limit first (decide in `6-ship`).
 
 ## Look and Feel
 From `prd.md > Look and Feel`, as build instructions. Tailwind v4 handles all of it with CSS variables and a few custom utilities; no component library.
